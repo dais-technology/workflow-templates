@@ -1,0 +1,50 @@
+name: python-build
+on:
+  workflow_call:
+    inputs:
+      aws-role-to-assum:
+        required: true
+        type: string
+    secrets:
+      github-token:
+        required: true
+      dais-machine-github-username:
+        required: true
+      dais-machine-github-email:
+        required: true
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.github-token }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v4 
+        with:
+          python-version: '3.8.6'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ inputs.aws-role-to-assum }}
+          aws-region: us-west-2
+          role-session-name: AWSSession
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Python Build and Release
+        shell: bash
+        run: |
+          git config user.name ${{ secrets.dais-machine-github-username }}
+          git config user.email ${{ secrets.dais-machine-github-email }}
+          pip3 install .[dev]
+          # Need to implement ElasticMock
+          # pytest tests --cov-report html --cov-report xml --junitxml=results.xml --cov ocr_service/ --reruns 3
+          bumpversion patch
+          make build
+          make release
+          git push && git push --tags

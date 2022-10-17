@@ -1,0 +1,73 @@
+name: rust-build
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        required: true
+        type: string
+      aws-role-to-assum:
+        required: true
+        type: string
+    secrets:
+      github-token:
+        required: true
+      dais-machine-github-username:
+        required: true
+      dais-machine-github-email:
+        required: true
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.github-token }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v4 
+        with:
+          python-version: '3.8.6'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ inputs.aws-role-to-assum }}
+          aws-region: us-west-2
+          role-session-name: AWSSession
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Cargo Build
+        shell: bash
+        run: |
+          git config user.name ${{ secrets.dais-machine-github-username }}
+          git config user.email ${{ secrets.dais-machine-github-email }}
+          
+          PROJECT_NAME='${{ inputs.project-name }}'
+          
+          # Compile and Test
+          docker build -t rust-builder -f Dockerfile.builder .
+          docker run --privileged -t -d --rm --name rust-builder rust-builder
+          docker exec -w /build rust-builder cargo tarpaulin --ignore-tests -vo Xml
+          docker cp rust-builder:/build/cobertura.xml .
+          
+          # Version
+          docker exec rust-builder cargo bump
+          docker cp rust-builder:/build/Cargo.toml ./Cargo.toml
+          nextVersion=$(awk '/^\[.*\]$/{obj=$0}/=/{print obj $0}' Cargo.toml | grep '\[package\]version = ' | awk '{print $3}' | tr -d '"' )
+          
+          # Build Final Image
+          docker exec rust-builder cargo build --release
+          docker cp rust-builder:/build/target/release/$PROJECT_NAME .
+          strip --strip-all $PROJECT_NAME
+          docker build -t $PROJECT_NAME -f Dockerfile.deploy .
+          docker rm -f rust-builder
+          
+          # Release
+          git commit -a -m 'Bump version in Cargo.toml for next release'
+          git tag -a ${nextVersion} -m "Release ${nextVersion}"
+          git push --follow-tags
+          docker tag $PROJECT_NAME ${{ secrets.AWS_ECR_US_WEST_2_REPOSITORY }}/$PROJECT_NAME:$nextVersion
+          docker push ${{ secrets.AWS_ECR_US_WEST_2_REPOSITORY }}/$PROJECT_NAME:$nextVersion
