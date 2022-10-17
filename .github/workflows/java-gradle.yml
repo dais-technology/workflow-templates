@@ -2,7 +2,7 @@ name: java-gradle-build
 on:
   workflow_call:
     inputs:
-      aws-role-to-assum:
+      aws-role-to-assume:
         required: true
         type: string
     secrets:
@@ -34,7 +34,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ inputs.aws-role-to-assum }}
+          role-to-assume: ${{ inputs.aws-role-to-assuma }}
           aws-region: us-west-2
           role-session-name: AWSSession
       - name: Login to Amazon ECR
