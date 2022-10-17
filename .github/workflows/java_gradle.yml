@@ -5,9 +5,6 @@ on:
       aws-role-to-assum:
         required: true
         type: string
-      aws-ecr-us-west-2-repository:
-        required: true
-        type: string
     secrets:
       github-token:
         required: true
