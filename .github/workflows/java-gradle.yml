@@ -5,6 +5,9 @@ on:
       aws-role-to-assume:
         required: true
         type: string
+    secrets:
+      DAIS_MACHINE_GITHUB_TOKEN:
+        required: true        
   workflow_dispatch:
 permissions:
   id-token: write
