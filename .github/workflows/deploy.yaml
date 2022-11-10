@@ -1,0 +1,33 @@
+name: deployment-test
+on:
+  workflow_call:
+    inputs:
+      aws-role-to-assume:
+        required: true
+        type: string
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
+          fetch-depth: 0
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ inputs.aws-role-to-assume }}
+          aws-region: us-west-2
+          role-session-name: AWSSession
+      - name: Deploy To Dev
+        id: foobar
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          FunctionName: spinnaker-trigger-dev-deployer
+          Payload: '{"application": "spinnaker-utils", "tag": "0.0.538", "gitLog": "Test log", "repositoryName": "service-spinnaker"}''
