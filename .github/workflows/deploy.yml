@@ -2,7 +2,7 @@ name: deployment-test
 on:
   workflow_call:
     inputs:
-      aws-role-to-assum:
+      aws-role-to-assume:
         required: true
         type: string
   workflow_dispatch:
