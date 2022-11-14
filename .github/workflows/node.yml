@@ -46,6 +46,7 @@ permissions:
       contents: read
 jobs:
   build:
+    if: github.actor != 'dais-machine'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

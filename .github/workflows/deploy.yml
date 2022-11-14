@@ -31,4 +31,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
-          Payload: '{"application": "spinnaker-utils", "tag": "0.0.538", "gitLog": "Test log", "repositoryName": "service-spinnaker"}'
+          Payload: '{"application": "spinnaker-utils", "tag": "0.0.538", "gitLog": "Test log", "repositoryName": "${{ github.repository }}"}'

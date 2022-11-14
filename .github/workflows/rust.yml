@@ -8,6 +8,9 @@ on:
       aws-role-to-assum:
         required: true
         type: string
+      aws-ecr-us-west-2-registry:
+        required: true
+        type: string
     secrets:
       github-token:
         required: true
@@ -21,6 +24,7 @@ permissions:
   contents: read
 jobs:
   build:
+    if: github.actor != 'dais-machine'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -69,5 +73,5 @@ jobs:
           git commit -a -m 'Bump version in Cargo.toml for next release'
           git tag -a ${nextVersion} -m "Release ${nextVersion}"
           git push --follow-tags
-          docker tag $PROJECT_NAME ${{ secrets.AWS_ECR_US_WEST_2_REPOSITORY }}/$PROJECT_NAME:$nextVersion
-          docker push ${{ secrets.AWS_ECR_US_WEST_2_REPOSITORY }}/$PROJECT_NAME:$nextVersion
+          docker tag $PROJECT_NAME ${{ inputs.aws-ecr-us-west-2-registry }}/$PROJECT_NAME:$nextVersion
+          docker push ${{ inputs.aws-ecr-us-west-2-registry }}/$PROJECT_NAME:$nextVersion
