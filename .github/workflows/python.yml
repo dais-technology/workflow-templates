@@ -2,7 +2,7 @@ name: python-build
 on:
   workflow_call:
     inputs:
-      aws-role-to-assum:
+      aws-role-to-assume:
         required: true
         type: string
     secrets:
@@ -18,7 +18,7 @@ permissions:
   contents: read
 jobs:
   build:
-    if: github.triggering_actor != 'dais-machine'
+    if: github.actor != 'dais-machine'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ inputs.aws-role-to-assum }}
+          role-to-assume: ${{ inputs.aws-role-to-assume }}
           aws-region: us-west-2
           role-session-name: AWSSession
       - name: Login to Amazon ECR
