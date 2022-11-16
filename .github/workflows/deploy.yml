@@ -35,7 +35,7 @@ jobs:
           echo '   tag: '${projectVersion} >> values-${projectVersion}.yaml          
           aws s3 cp values-${projectVersion}.yaml s3://dais-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
           echo "::set-output name=projectVersion::$projectVersion"
-          echo "::set-output name=projectName=$projectName"
+          echo "::set-output name=projectName::$projectName"
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
