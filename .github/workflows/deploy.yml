@@ -5,9 +5,6 @@ on:
       aws-role-to-assume:
         required: true
         type: string
-      application:
-        required: true
-        type: string
   workflow_dispatch:
 permissions:
   id-token: write
