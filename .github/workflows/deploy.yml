@@ -11,6 +11,8 @@ permissions:
   contents: read
 jobs:
   build:
+    env:
+      gitLog: ${{ github.event.head_commit.message }}  
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -36,6 +38,7 @@ jobs:
           aws s3 cp values-${projectVersion}.yaml s3://dais-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
           echo "::set-output name=projectVersion::$projectVersion"
           echo "::set-output name=projectName::$projectName"
+          echo "::set-output name=gitLog::$projectName"
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
@@ -46,4 +49,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
-          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ github.event.commits[0].message }}", "repositoryName": "${{ github.repository }}"}'
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ env.gitLog }}", "repositoryName": "${{ github.repository }}"}'
