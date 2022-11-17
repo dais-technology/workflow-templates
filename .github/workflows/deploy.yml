@@ -49,3 +49,5 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ steps.push.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
+      - name: Store response payload to file
+        run: echo '${{ fromJSON(steps.deploy-to-dev.outputs.response).Payload }}' > invocation-response.json
