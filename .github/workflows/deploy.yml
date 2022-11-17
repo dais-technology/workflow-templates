@@ -28,7 +28,7 @@ jobs:
         run: |
           projectName=$(python3 setup.py --name)
           projectVersion=$(python3 setup.py --version)
-          gitLog=$(git log -1 --pretty=%B)
+          gitLog=$(git log --pretty=format:%s)
           cat values.yaml > values-${projectVersion}.yaml
           echo 'image: ' >> values-${projectVersion}.yaml
           echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${projectName} >> values-${projectVersion}.yaml
@@ -48,4 +48,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
-          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "aaaa}", "repositoryName": "${{ github.repository }}"}'
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ steps.push.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
