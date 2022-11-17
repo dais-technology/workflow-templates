@@ -28,8 +28,7 @@ jobs:
         run: |
           projectName=$(python3 setup.py --name)
           projectVersion=$(python3 setup.py --version)
-          gitLog=$(git log --pretty=format:%s)
-          gitLog=$(echo $gitLog)
+          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/)
           cat values.yaml > values-${projectVersion}.yaml
           echo 'image: ' >> values-${projectVersion}.yaml
           echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${projectName} >> values-${projectVersion}.yaml
