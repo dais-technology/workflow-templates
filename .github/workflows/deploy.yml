@@ -33,9 +33,9 @@ jobs:
           echo 'image: ' >> values-${projectVersion}.yaml
           echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${projectName} >> values-${projectVersion}.yaml
           echo '   pullPolicy: 'Always >> values-${projectName}.yaml
-          echo '   tag: '${projectVersion} >> values-${projectVersion}.yaml          
+          echo '   tag: '${projectVersion} >> values-${projectVersion}.yaml
           aws s3 cp values-${projectVersion}.yaml s3://dais-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
-          sed 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/' values-${projectVersion}.yaml > values-${projectVersion}.yaml
+          sed 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/' ./values-${projectVersion}.yaml > values-${projectVersion}.yaml
           aws s3 cp values-${projectVersion}.yaml s3://jm-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
           echo "::set-output name=projectVersion::$projectVersion"
           echo "::set-output name=projectName::$projectName"
