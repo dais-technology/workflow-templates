@@ -32,20 +32,49 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ inputs.aws-role-to-assume }}
-          aws-region: us-west-2
+          aws-region: ${{ secrets.ACTIONS_AWS_REGION }}
           role-session-name: AWSSession
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Python Build and Release
-        shell: bash
+        shell: build
         run: |
           git config user.name ${{ secrets.dais-machine-github-username }}
           git config user.email ${{ secrets.dais-machine-github-email }}
+          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           pip3 install .[dev]
+          projectName=$(python3 setup.py --name)
           # Need to implement ElasticMock
-          # pytest tests --cov-report html --cov-report xml --junitxml=results.xml --cov ocr_service/ --reruns 3
+          # pytest tests --cov-report html --cov-report xml --junitxml=results.xml --cov $projectName/ --reruns 3
           bumpversion patch
           make build
           make release
           git push && git push --tags
+          echo "::set-output name=gitLog::$gitLog"
+      - name: Push values.yaml to DAIS S3
+        id: push
+        run: |
+          projectName=$(python3 setup.py --name)
+          projectVersion=$(python3 setup.py --version)
+          cat values.yaml > values-${projectVersion}.yaml
+          echo 'image: ' >> values-${projectVersion}.yaml
+          echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${projectName} >> values-${projectVersion}.yaml
+          echo '   pullPolicy: 'Always >> values-${projectName}.yaml
+          echo '   tag: '${projectVersion} >> values-${projectVersion}.yaml          
+          aws s3 cp values-${projectVersion}.yaml s3://dais-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
+          sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${projectVersion}.yaml
+          aws s3 cp values-${projectVersion}.yaml s3://jm-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
+          echo "::set-output name=projectVersion::$projectVersion"
+          echo "::set-output name=projectName::$projectName"
+        env:
+          AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+      - name: Deploy To Dev
+        id: deploy-to-dev
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-trigger-dev-deployer
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'

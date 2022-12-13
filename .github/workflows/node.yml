@@ -94,19 +94,47 @@ jobs:
         run: |
           git config user.name ${{ secrets.dais-machine-github-username }}
           git config user.email ${{ secrets.dais-machine-github-email }}
+          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci --ignore-scripts
           npm run test
           version=$(npm version patch)
           echo "New version is $version"
           git push origin master --tags
+          repositoryName=$(node -pe "require('./package.json').name")
           echo "::set-output name=imageVersion::$version"
+          echo "::set-output name=projectName=$repositoryName"
+          echo "::set-output name=gitLog::$gitLog"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
       - name: Build, tag, and push docker image to Amazon ECR     
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ inputs.project-name }}
+          REPOSITORY: ${{ steps.npm-build.outputs.projectName }} 
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}       
         run: |
           docker build -t ${{ inputs.aws-ecr-us-west-2-registry }}/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.actions-aws-access-key-id }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.actions-aws-secret-access-key }} --build-arg NPM_TOKEN_READ=${{ secrets.npm-token }} --build-arg FORTAWESOME_TOKEN=${{ secrets.fontawesome-token }} --build-arg BIT_AUTH_TOKEN=${{ secrets.bit-auth-token }} .
           docker push ${{ inputs.aws-ecr-us-west-2-registry }}/$REPOSITORY:$VERSION
+      - name: Push values.yaml to DAIS S3
+        run: |
+          cat values.yaml > values-${VERSION}.yaml
+          echo 'image: ' >> values-${VERSION}.yaml
+          echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${PROJECT_NAME} >> values-${VERSION}.yaml
+          echo '   pullPolicy: 'Always >> values-${PROJECT_NAME}.yaml
+          echo '   tag: '${VERSION} >> values-${VERSION}.yaml          
+          aws s3 cp values-${VERSION}.yaml s3://dais-helm-charts/packagevalues/${PROJECT_NAME}/values-${VERSION}.yaml
+          sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${VERSION}.yaml
+          aws s3 cp values-${VERSION}.yaml s3://jm-helm-charts/packagevalues/${PROJECT_NAME}/values-${VERSION}.yaml
+        with:
+          AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          VERSION: ${{ steps.npm-build.outputs.imageVersion }}
+          PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
+      - name: Deploy To Dev
+        id: deploy-to-dev
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-trigger-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs..gitLog }}", "repositoryName": "${{ github.repository }}"}' 
+

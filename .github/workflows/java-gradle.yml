@@ -41,12 +41,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build with Gradle
+        id: build
         env:
           GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
         shell: bash
         run: |
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
+          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           mkdir -p ~/.gradle/
           echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
@@ -54,6 +56,7 @@ jobs:
           git status --porcelain
           ./gradlew --refresh-dependencies version
           ./gradlew release -x test
+          echo "::set-output name=gitLog::$gitLog"
       - name: Read Version
         id: read_version
         uses: christian-draeger/read-properties@1.1.0
@@ -66,8 +69,30 @@ jobs:
         with:
           path: 'settings.gradle'
           properties: 'rootProject.name'
-      - name: Show Version and Project Name
+      - name: Publish
+        id: publish
         run: |
           echo ${{ steps.read_version.outputs.build-version }}
           echo ${{ steps.read_project_name.outputs.rootProject-name }}
           ./gradlew -x test artifactoryPublish pushDocker
+      - name: Push values.yaml to DAIS s3
+        run: |
+          cat values.yaml > values-${{ steps.read_version.outputs.build-version }}.yaml
+          echo 'image: ' >> values-${{ steps.read_version.outputs.build-version }}.yaml
+          echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${{ steps.read_project_name.outputs.rootProject-name }} >> values-${{ steps.read_version.outputs.build-version }}.yaml
+          echo '   pullPolicy: 'Always >> values-${{ steps.read_version.outputs.build-version }}.yaml
+          echo '   tag: '${{ steps.read_version.outputs.build-version }} >> values-${{ steps.read_version.outputs.build-version }}.yaml          
+          aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://dais-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
+          sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${{ steps.read_version.outputs.build-version }}.yaml
+          aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://jm-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
+        with:
+          AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+      - name: Deploy To Dev
+        id: deploy-to-dev
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-trigger-dev-deployer
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "tag": "${{ steps.read_version.outputs.build-version }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'

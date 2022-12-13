@@ -91,7 +91,7 @@ def create_secret(token, repository_id, environment_name, secret_name, secret_va
   url = f'https://api.github.com/repositories/{repository_id}/environments/{environment_name}/secrets/{secret_name}'
   resp = requests.put(url=url, headers=headers, data=json.dumps(payload))
 
-def get_secret(env, name):
+def get_secret(env, name):    
   secret_name = f"{env}/github/{name}"
   region_name = "us-west-2"
   session = boto3.session.Session()
