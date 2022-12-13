@@ -1,5 +1,8 @@
 name: deployment-test
 on:
+  push:
+    branches-ignore:    
+      - 'master'
   workflow_call:
     inputs:
       aws-role-to-assume:
