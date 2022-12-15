@@ -1,4 +1,4 @@
-name: python-build
+name: node-build
 on:
   workflow_call:
     inputs:
