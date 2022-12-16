@@ -66,6 +66,7 @@ jobs:
           echo "::set-output name=gitLog::$gitLog"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          FONTAWESOME_NPM_AUTH_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
       - name: Build, tag, and push docker image to Amazon ECR     
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
