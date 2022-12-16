@@ -61,7 +61,7 @@ jobs:
           echo "New version is $version"
           default_branch=$(git branch --show-current)
           git push origin $default_branch --tags
-          repositoryName=$(node -pe "require('./package.json').name")
+          repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           echo "::set-output name=imageVersion::$version"
           echo "::set-output name=projectName::$repositoryName"
           echo "::set-output name=gitLog::$gitLog"
