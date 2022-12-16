@@ -5,35 +5,6 @@ on:
       aws-role-to-assume:
         required: true
         type: string
-    secrets:
-      github-token:
-        required: true
-      dais-machine-github-username:
-        required: true
-      dais-machine-github-email:
-        required: true
-      jira-base-url:
-        required: true
-      jira-user-email:
-        required: true
-      jira-api-token:
-        required: true
-      jf-url:
-        required: true
-      jf-user:
-        required: true
-      jf-password:
-        required: true
-      actions-aws-access-key-id: 
-        required: true
-      aws-secret-access-key:
-        required: true
-      npm-token:
-        required: true
-      fontawesome-token:
-        required: true
-      bit-auth-token:
-        required: true
   workflow_dispatch:
 permissions:
       id-token: write
