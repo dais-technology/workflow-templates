@@ -5,7 +5,7 @@ on:
       project-name:
         required: true
         type: string
-      aws-role-to-assum:
+      aws-role-to-assume:
         required: true
         type: string
       aws-ecr-us-west-2-registry:
