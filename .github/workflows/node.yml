@@ -1,4 +1,4 @@
-name: node-build
+name: Node build
 on:
   workflow_call:
     inputs:
