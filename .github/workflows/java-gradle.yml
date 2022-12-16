@@ -70,12 +70,14 @@ jobs:
           path: 'settings.gradle'
           properties: 'rootProject.name'
       - name: Publish
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         id: publish
         run: |
           echo ${{ steps.read_version.outputs.build-version }}
           echo ${{ steps.read_project_name.outputs.rootProject-name }}
           ./gradlew -x test artifactoryPublish pushDocker
       - name: Push values.yaml to DAIS s3
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         run: |
           cat values.yaml > values-${{ steps.read_version.outputs.build-version }}.yaml
           echo 'image: ' >> values-${{ steps.read_version.outputs.build-version }}.yaml
@@ -88,6 +90,7 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
