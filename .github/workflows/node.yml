@@ -59,7 +59,8 @@ jobs:
           npm run test
           version=$(npm version patch)
           echo "New version is $version"
-          git push origin master --tags
+          default_branch=$(git branch --show-current)
+          git push origin $default_branch --tags
           repositoryName=$(node -pe "require('./package.json').name")
           echo "::set-output name=imageVersion::$version"
           echo "::set-output name=projectName=$repositoryName"
