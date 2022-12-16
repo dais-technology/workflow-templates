@@ -84,7 +84,7 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$VERSION          
       - name: Push values.yaml to DAIS S3
         run: |
-          cat values.yaml > values-${VERSION}.yaml
+          cat templateValues.yaml > values-${VERSION}.yaml
           echo 'image: ' >> values-${VERSION}.yaml
           echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${PROJECT_NAME} >> values-${VERSION}.yaml
           echo '   pullPolicy: 'Always >> values-${PROJECT_NAME}.yaml
