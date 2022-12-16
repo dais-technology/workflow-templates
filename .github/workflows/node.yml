@@ -124,7 +124,7 @@ jobs:
           aws s3 cp values-${VERSION}.yaml s3://dais-helm-charts/packagevalues/${PROJECT_NAME}/values-${VERSION}.yaml
           sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${VERSION}.yaml
           aws s3 cp values-${VERSION}.yaml s3://jm-helm-charts/packagevalues/${PROJECT_NAME}/values-${VERSION}.yaml
-        with:
+        env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
@@ -136,5 +136,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
-          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs..gitLog }}", "repositoryName": "${{ github.repository }}"}' 
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
 
