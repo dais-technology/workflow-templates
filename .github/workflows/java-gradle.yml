@@ -85,7 +85,7 @@ jobs:
           aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://dais-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
           sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${{ steps.read_version.outputs.build-version }}.yaml
           aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://jm-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
-        with:
+        env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
         id: deploy-to-dev
