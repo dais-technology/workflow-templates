@@ -57,7 +57,8 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci --ignore-scripts
           npm run test
-          version=$(npm version patch)
+          patch_version=$(npm version patch)
+          version=$(node -pe "require('./package.json').version")
           echo "New version is $version"
           default_branch=$(git branch --show-current)
           git push origin $default_branch --tags
