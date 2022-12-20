@@ -57,15 +57,18 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci --ignore-scripts
           npm run test
-          patch_version=$(npm version patch)
-          version=$(node -pe "require('./package.json').version")
-          echo "New version is $version"
           default_branch=$(git branch --show-current)
-          git push origin $default_branch --tags
-          repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
-          echo "::set-output name=imageVersion::$version"
-          echo "::set-output name=projectName::$repositoryName"
-          echo "::set-output name=gitLog::$gitLog"
+          if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
+            patch_version=$(npm version patch)
+            version=$(node -pe "require('./package.json').version")
+            echo "New version is $version"
+            default_branch=$(git branch --show-current)
+            git push origin $default_branch --tags
+            repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
+            echo "::set-output name=imageVersion::$version"
+            echo "::set-output name=projectName::$repositoryName"
+            echo "::set-output name=gitLog::$gitLog"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
