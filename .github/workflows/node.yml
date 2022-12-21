@@ -16,20 +16,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
+          token: ${{ secrets.github-token }}
+      - name: Run a one-line script
+        run: echo Hello, world!
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
       - uses: jfrog/setup-jfrog-cli@v2
         env:
-          JF_URL: ${{ secrets.JF_URL }}
-          JF_USER: ${{ secrets.JF_USER }}
-          JF_PASSWORD: ${{ secrets.JF_PASSWORD }}
+          JF_URL: ${{ secrets.jf-url }}
+          JF_USER: ${{ secrets.jf-user }}
+          JF_PASSWORD: ${{ secrets.jf-password }}
       - run: |
           jf rt ping
       - name: Login
         uses: atlassian/gajira-login@master
         env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}     
+          JIRA_BASE_URL: ${{ secrets.jira-base-url }}
+          JIRA_USER_EMAIL: ${{ secrets.jira-user-email }}
+          JIRA_API_TOKEN: ${{ secrets.jira-api-token }}   
       - name: Find in commit messages
         uses: atlassian/gajira-find-issue-key@master
         with:
@@ -42,7 +47,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ inputs.aws-role-to-assume }}
+          role-to-assume: ${{ inputs.aws-role-to-assum }}
           aws-region: us-west-2
           role-session-name: AWSSession
       - name: Login to Amazon ECR
@@ -52,45 +57,32 @@ jobs:
       - name: Install Dependencies and Run Unit Tests
         id: npm-build
         run: |
-          git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
-          git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
+          git config user.name ${{ secrets.dais-machine-github-username }}
+          git config user.email ${{ secrets.dais-machine-github-email }}
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci --ignore-scripts
           npm run test
-          default_branch=$(git branch --show-current)
-          if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
-            patch_version=$(npm version patch)
-            version=$(node -pe "require('./package.json').version")
-            echo "New version is $version"
-            default_branch=$(git branch --show-current)
-            git push origin $default_branch --tags
-            repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
-            echo "::set-output name=imageVersion::$version"
-            echo "::set-output name=projectName::$repositoryName"
-            echo "::set-output name=gitLog::$gitLog"
-          fi
+          version=$(npm version patch)
+          echo "New version is $version"
+          git push origin master --tags
+          npm publish
+          repositoryName=$(node -pe "require('./package.json').name")
+          echo "::set-output name=imageVersion::$version"
+          echo "::set-output name=projectName=$repositoryName"
+          echo "::set-output name=gitLog::$gitLog"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
-          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
-          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
-      - name: Build, tag, and push docker image to Amazon ECR
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'     
+          NODE_AUTH_TOKEN: ${{ secrets.npm-token }}
+      - name: Build, tag, and push docker image to Amazon ECR     
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ steps.npm-build.outputs.projectName }} 
-          VERSION: ${{ steps.npm-build.outputs.imageVersion }}    
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
-          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
-          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}          
+          VERSION: ${{ steps.npm-build.outputs.imageVersion }}       
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg FONTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} --build-arg VUE_APP_SMARTY_STREETS_KEY=${{ secrets.VUE_APP_SMARTY_STREETS_KEY }} --build-arg AG_GRID_LICENSE_KEY='${{ secrets.AG_GRID_LICENSE_KEY }}' .
-          docker push $REGISTRY/$REPOSITORY:$VERSION          
+          docker build -t ${{ inputs.aws-ecr-us-west-2-registry }}/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.actions-aws-access-key-id }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.actions-aws-secret-access-key }} --build-arg NPM_TOKEN_READ=${{ secrets.npm-token }} --build-arg FORTAWESOME_TOKEN=${{ secrets.fontawesome-token }} --build-arg BIT_AUTH_TOKEN=${{ secrets.bit-auth-token }} .
+          docker push ${{ inputs.aws-ecr-us-west-2-registry }}/$REPOSITORY:$VERSION
       - name: Push values.yaml to DAIS S3
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         run: |
-          cat templateValues.yaml > values-${VERSION}.yaml
+          cat values.yaml > values-${VERSION}.yaml
           echo 'image: ' >> values-${VERSION}.yaml
           echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${PROJECT_NAME} >> values-${VERSION}.yaml
           echo '   pullPolicy: 'Always >> values-${PROJECT_NAME}.yaml
@@ -103,7 +95,6 @@ jobs:
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
       - name: Deploy To Dev
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
