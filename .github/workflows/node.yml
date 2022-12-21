@@ -63,6 +63,7 @@ jobs:
             version=$(node -pe "require('./package.json').version")
             echo "New version is $version"
             default_branch=$(git branch --show-current)
+            npm publish
             git push origin $default_branch --tags
             repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
             echo "::set-output name=imageVersion::$version"
