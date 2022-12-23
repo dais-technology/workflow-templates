@@ -56,6 +56,7 @@ jobs:
           git status --porcelain
           ./gradlew --refresh-dependencies
           if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
+            ./gradlew version
             ./gradlew release -x test
             echo "::set-output name=gitLog::$gitLog"
           fi
