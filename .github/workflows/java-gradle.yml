@@ -56,9 +56,9 @@ jobs:
           git status --porcelain
           if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
             ./gradlew --refresh-dependencies version
+            ./gradlew release -x test
+            echo "::set-output name=gitLog::$gitLog"
           fi
-          ./gradlew release -x test
-          echo "::set-output name=gitLog::$gitLog"
       - name: Read Version
         id: read_version
         uses: christian-draeger/read-properties@1.1.0
