@@ -54,10 +54,7 @@ jobs:
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
           git fetch --tags
           git status --porcelain
-          ./gradlew --refresh-dependencies version
-          ./gradlew release -x test
-           echo "::set-output name=gitLog::$gitLog"
-
+          ./gradlew --refresh-dependencies
           if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
             ./gradlew release -x test
             echo "::set-output name=gitLog::$gitLog"
