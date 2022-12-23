@@ -105,5 +105,5 @@ jobs:
       - name: Trigger SDK Build
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         run: |
-          CRUMB=`curl -s -u "${{ secrets.JENKINS_USER }}:${secrets.JENKINS_TOKEN}}" 'https://${{ secrets.JENKINS_URL }}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)'`
-          curl -X POST -I -u ${{ secrets.JENKINS_USER }}:${secrets.JENKINS_TOKEN }} -H "$CRUMB" https://${ {secrets.JENKINS_URL }}/job/dais-technology/job/javascript-sdk-minimal/job/master/buildWithParameters?force=true
+          CRUMB=`curl -s -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN}}" 'https://${{ secrets.JENKINS_URL }}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)'`
+          curl -X POST -I -u ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }} -H "$CRUMB" https://${{ secrets.JENKINS_URL }}/job/dais-technology/job/javascript-sdk-minimal/job/master/buildWithParameters?force=true
