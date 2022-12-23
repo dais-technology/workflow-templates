@@ -60,7 +60,7 @@ jobs:
             echo "::set-output name=gitLog::$gitLog"
           fi
       - name: Read Version
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.event_name != 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         id: read_version
         uses: christian-draeger/read-properties@1.1.0
         with:
@@ -80,7 +80,7 @@ jobs:
           echo ${{ steps.read_project_name.outputs.rootProject-name }}
           ./gradlew -x test artifactoryPublish pushDocker
       - name: Push values.yaml to DAIS s3
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.event_name != 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         run: |
           cat values.yaml > values-${{ steps.read_version.outputs.build-version }}.yaml
           echo 'image: ' >> values-${{ steps.read_version.outputs.build-version }}.yaml
@@ -93,7 +93,7 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.event_name != 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -103,7 +103,7 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "tag": "${{ steps.read_version.outputs.build-version }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
       - name: Trigger SDK Build
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.event_name != 'pull_request' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         run: |
           CRUMB=$(curl -s -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN}}" 'https://${{ secrets.JENKINS_URL}}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
           curl -X POST -s -u ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }} -H "$CRUMB" https://${{ secrets.JENKINS_URL}}/job/dais-technology/job/javascript-sdk-minimal/job/master/buildWithParameters?force=true
