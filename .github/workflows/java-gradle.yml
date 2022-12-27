@@ -79,14 +79,18 @@ jobs:
       - name: Push values.yaml to DAIS s3
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')      
         run: |
+          project_name=${{ steps.read_project_name.outputs.rootProject-name }}
+          if [[ "$project_name" == 'jm-warranty-claim' ]]; then
+              project_name='camunda'
+          fi
           cat values.yaml > values-${{ steps.read_version.outputs.build-version }}.yaml
           echo 'image: ' >> values-${{ steps.read_version.outputs.build-version }}.yaml
-          echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${{ steps.read_project_name.outputs.rootProject-name }} >> values-${{ steps.read_version.outputs.build-version }}.yaml
+          echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${project_name} >> values-${{ steps.read_version.outputs.build-version }}.yaml
           echo '   pullPolicy: 'Always >> values-${{ steps.read_version.outputs.build-version }}.yaml
           echo '   tag: '${{ steps.read_version.outputs.build-version }} >> values-${{ steps.read_version.outputs.build-version }}.yaml          
-          aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://dais-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
+          aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://dais-helm-charts/packagevalues/${project_name}/values-${{ steps.read_version.outputs.build-version }}.yaml
           sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${{ steps.read_version.outputs.build-version }}.yaml
-          aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://jm-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
+          aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://jm-helm-charts/packagevalues/${project_name}/values-${{ steps.read_version.outputs.build-version }}.yaml
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
