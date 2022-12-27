@@ -33,7 +33,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ inpupts.jdk }}
+          java-version: ${{ inputs.jdk }}
           distribution: 'adopt'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
