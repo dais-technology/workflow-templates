@@ -31,7 +31,8 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Python Build and Release
-        shell: build
+        id: build
+        shell: bash
         run: |
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
