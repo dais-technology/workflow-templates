@@ -2,13 +2,7 @@ name: rust-build
 on:
   workflow_call:
     inputs:
-      project-name:
-        required: true
-        type: string
       aws-role-to-assum:
-        required: true
-        type: string
-      aws-ecr-us-west-2-registry:
         required: true
         type: string
     secrets:
