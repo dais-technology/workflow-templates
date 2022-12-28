@@ -7,11 +7,11 @@ on:
         type: string
     secrets:
       github-token:
-        required: true
+        required: false
       dais-machine-github-username:
-        required: true
+        required: false
       dais-machine-github-email:
-        required: true
+        required: false
   workflow_dispatch:
 permissions:
   id-token: write
