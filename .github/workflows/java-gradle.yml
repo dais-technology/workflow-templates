@@ -44,6 +44,40 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+      - name: Read Version
+        id: read_version
+        uses: christian-draeger/read-properties@1.1.0
+        with:
+          path: 'version.txt'
+          properties: 'build.version'
+      - name: Read Project Name
+        id: read_project_name
+        uses: christian-draeger/read-properties@1.1.0
+        with:
+          path: 'settings.gradle'
+          properties: 'rootProject.name'
+      - name: Create Application and Pipelines - DAIS
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        id: create-app-and-pipelines-dais
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
+      - name: Create Application and Pipelines - JM
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        id: create-app-and-pipelines-jm
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'        
       - name: Build with Gradle
         id: build
         env:
@@ -61,18 +95,6 @@ jobs:
           ./gradlew --refresh-dependencies version
           ./gradlew release -x test
            echo "::set-output name=gitLog::$gitLog"
-      - name: Read Version
-        id: read_version
-        uses: christian-draeger/read-properties@1.1.0
-        with:
-          path: 'version.txt'
-          properties: 'build.version'
-      - name: Read Project Name
-        id: read_project_name
-        uses: christian-draeger/read-properties@1.1.0
-        with:
-          path: 'settings.gradle'
-          properties: 'rootProject.name'
       - name: Publish
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')      
         id: publish
