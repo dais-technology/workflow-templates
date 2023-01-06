@@ -78,7 +78,29 @@ jobs:
           FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
           BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+      - name: Create Application and Pipelines - JM
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        id: create-app-and-pipelines-jm
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}' 
+      - name: Create Application and Pipelines - DAIS
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        id: create-app-and-pipelines-dais
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "DAIS"}' 
       - name: Build, tag, and push docker image to Amazon ECR
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'     
         env:
