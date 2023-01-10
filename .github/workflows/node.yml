@@ -64,7 +64,9 @@ jobs:
             echo "New version is $version"
             default_branch=$(git branch --show-current)
             repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
-            npm publish
+            if [[ "$repositoryName" = "ioi-product-clean-answers" ]]; then
+              npm publish
+            fi
             git push origin $default_branch --tags
             echo "::set-output name=imageVersion::$version"
             echo "::set-output name=projectName::$repositoryName"
