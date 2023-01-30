@@ -144,7 +144,7 @@ jobs:
         with:
           owner: dais-technology
           repo: javascript-sdk-minimal
-          github_token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+          github_token: ${{ secrets.DAIS_DEVOPS_TEAM_ACTIONS_PERSONAL_ACCESS_TOKEN }}
           workflow_file_name: main.yml
           ref: master
 
