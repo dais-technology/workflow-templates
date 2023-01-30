@@ -129,7 +129,10 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "tag": "${{ steps.read_version.outputs.build-version }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
       - name: Trigger SDK Build
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
-        run: |
-          CRUMB=$(curl -s -u "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN}}" 'https://${{ secrets.JENKINS_URL}}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
-          curl -X POST -s -u ${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }} -H "$CRUMB" https://${{ secrets.JENKINS_URL}}/job/dais-technology/job/javascript-sdk-minimal/job/master/buildWithParameters?force=true
+        uses: convictional/trigger-workflow-and-wait@v1.6.1
+        with:
+          owner: dais-technology
+          repo: javascript-sdk-minimal
+          github_token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+          workflow_file_name: main.yml
+          ref: master
