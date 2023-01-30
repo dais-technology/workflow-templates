@@ -5,6 +5,8 @@ from base64 import b64encode
 from nacl import encoding, public
 from botocore.exceptions import ClientError
 import os
+import requests
+import json
 
 def list_all_repos(token):
   headers = {"Authorization": f"Bearer {token}"}
@@ -50,6 +52,7 @@ def secretExists(token, repository_id, env, secret):
   if 'message' in data:
     return False
   else:
+    print(f"Secret [{secret}] exists in repository [{repository_id}], skipping creation")
     return True
 
 def envExists(token, repository_id, env):
@@ -69,6 +72,7 @@ def create_env(token, repository_id, environment_name):
 
 
 def get_public_key(token, repository_id, environment_name):
+  headers = {"Authorization": f"Bearer {token}"}
   url = f'https://api.github.com/repositories/{repository_id}/environments/{environment_name}/secrets/public-key'
   resp = requests.get(url=url, headers=headers)
   return resp.json()
@@ -110,14 +114,8 @@ my_repos = list_all_repos(token)
 environment_name = 'dev'
 found = False
 repo_count = 0
+
 for repo in my_repos:
-  if repo['name'] != 'workflow-templates' and found == False:
-      repo_count = repo_count + 1
-      print(f"Repo count = {repo_count}")
-      print(repo['name'])
-      continue
-  else:
-    found = True
   all_secrets = list_all_secrets(token)
   repository_id = repo['id']
   repository_name = repo['name']
