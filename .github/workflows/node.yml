@@ -22,8 +22,6 @@ jobs:
           JF_URL: ${{ secrets.JF_URL }}
           JF_USER: ${{ secrets.JF_USER }}
           JF_PASSWORD: ${{ secrets.JF_PASSWORD }}
-      - run: |
-          jf rt ping
       - name: Login
         uses: atlassian/gajira-login@master
         env:
@@ -141,4 +139,12 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
+      - name: Trigger SDK Build
+        uses: convictional/trigger-workflow-and-wait@v1.6.1
+        with:
+          owner: dais-technology
+          repo: javascript-sdk-minimal
+          github_token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+          workflow_file_name: main.yml
+          ref: master
 
