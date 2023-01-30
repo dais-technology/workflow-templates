@@ -22,8 +22,6 @@ jobs:
           JF_URL: ${{ secrets.JF_URL }}
           JF_USER: ${{ secrets.JF_USER }}
           JF_PASSWORD: ${{ secrets.JF_PASSWORD }}
-      - run: |
-          jf rt ping
       - name: Login
         uses: atlassian/gajira-login@master
         env:
@@ -57,28 +55,69 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci --ignore-scripts
           npm run test
-          version=$(npm version patch)
-          echo "New version is $version"
-          git push origin master --tags
-          repositoryName=$(node -pe "require('./package.json').name")
-          echo "::set-output name=imageVersion::$version"
-          echo "::set-output name=projectName=$repositoryName"
-          echo "::set-output name=gitLog::$gitLog"
+          default_branch=$(git branch --show-current)
+          if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
+            patch_version=$(npm version patch)
+            version=$(node -pe "require('./package.json').version")
+            echo "New version is $version"
+            default_branch=$(git branch --show-current)
+            repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
+            if [[ "$repositoryName" = "ioi-product-clean-answers" ]]; then
+              npm publish
+            fi
+            git push origin $default_branch --tags
+            echo "::set-output name=imageVersion::$version"
+            echo "::set-output name=projectName::$repositoryName"
+            echo "::set-output name=gitLog::$gitLog"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
           FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
           BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
-      - name: Build, tag, and push docker image to Amazon ECR     
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+      - name: Create Application and Pipelines - JM
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        id: create-app-and-pipelines-jm
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}' 
+      - name: Create Application and Pipelines - DAIS
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        id: create-app-and-pipelines-dais
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "DAIS"}' 
+      - name: Build, tag, and push docker image to Amazon ECR
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'     
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ steps.npm-build.outputs.projectName }} 
-          VERSION: ${{ steps.npm-build.outputs.imageVersion }}       
+          VERSION: ${{ steps.npm-build.outputs.imageVersion }}    
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
+          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
+          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}     
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}          
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg FORTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} .
+          docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg FONTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} --build-arg VUE_APP_SMARTY_STREETS_KEY=${{ secrets.VUE_APP_SMARTY_STREETS_KEY }} --build-arg AG_GRID_LICENSE_KEY='${{ secrets.AG_GRID_LICENSE_KEY }}' .
           docker push $REGISTRY/$REPOSITORY:$VERSION          
       - name: Push values.yaml to DAIS S3
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         run: |
-          cat values.yaml > values-${VERSION}.yaml
+          cat templateValues.yaml > values-${VERSION}.yaml
           echo 'image: ' >> values-${VERSION}.yaml
           echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${PROJECT_NAME} >> values-${VERSION}.yaml
           echo '   pullPolicy: 'Always >> values-${PROJECT_NAME}.yaml
@@ -91,6 +130,7 @@ jobs:
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
       - name: Deploy To Dev
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -99,4 +139,12 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
+      - name: Trigger SDK Build
+        uses: convictional/trigger-workflow-and-wait@v1.6.1
+        with:
+          owner: dais-technology
+          repo: javascript-sdk-minimal
+          github_token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+          workflow_file_name: main.yml
+          ref: master
 

@@ -5,13 +5,6 @@ on:
       aws-role-to-assume:
         required: true
         type: string
-    secrets:
-      github-token:
-        required: true
-      dais-machine-github-username:
-        required: true
-      dais-machine-github-email:
-        required: true
   workflow_dispatch:
 permissions:
   id-token: write
@@ -23,11 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.github-token }}
+          token: ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
           fetch-depth: 0
       - uses: actions/setup-python@v4 
         with:
-          python-version: '3.8.6'
+          python-version: '3.8.15'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -38,10 +31,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Python Build and Release
-        shell: build
+        id: build
+        shell: bash
         run: |
-          git config user.name ${{ secrets.dais-machine-github-username }}
-          git config user.email ${{ secrets.dais-machine-github-email }}
+          git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
+          git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           pip3 install .[dev]
           projectName=$(python3 setup.py --name)
@@ -69,6 +63,25 @@ jobs:
           echo "::set-output name=projectName::$projectName"
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+      - name: Create Application and Pipelines - DAIS
+        id: create-app-and-pipelines-dais
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "template": "backend-python", "account": "DAIS"}'
+      - name: Create Application and Pipelines - JM
+        id: create-app-and-pipelines-jm
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "template": "backend-python", "account": "JM"}'
       - name: Deploy To Dev
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master

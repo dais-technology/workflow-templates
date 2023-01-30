@@ -2,22 +2,9 @@ name: rust-build
 on:
   workflow_call:
     inputs:
-      project-name:
-        required: true
-        type: string
       aws-role-to-assum:
         required: true
         type: string
-      aws-ecr-us-west-2-registry:
-        required: true
-        type: string
-    secrets:
-      github-token:
-        required: true
-      dais-machine-github-username:
-        required: true
-      dais-machine-github-email:
-        required: true
   workflow_dispatch:
 permissions:
   id-token: write
@@ -29,11 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.github-token }}
+          token: ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
           fetch-depth: 0
-      - uses: actions/setup-python@v4 
-        with:
-          python-version: '3.8.6'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -89,7 +73,7 @@ jobs:
           aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://dais-helm-charts/packagevalues/${{ steps.read_project_name.outputs.rootProject-name }}/values-${{ steps.read_version.outputs.build-version }}.yaml
           sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${projectVersion}.yaml
           aws s3 cp values-${projectVersion}.yaml s3://jm-helm-charts/packagevalues/${projectName}/values-${projectVersion}.yaml
-        with:
+        env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Deploy To Dev
         id: deploy-to-dev
