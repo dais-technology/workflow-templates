@@ -129,6 +129,7 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "tag": "${{ steps.read_version.outputs.build-version }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
       - name: Trigger SDK Build
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')  
         uses: convictional/trigger-workflow-and-wait@v1.6.1
         with:
           owner: dais-technology
