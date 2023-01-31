@@ -135,4 +135,5 @@ jobs:
           repo: javascript-sdk-minimal
           github_token: ${{ secrets.DAIS_DEVOPS_TEAM_ACTIONS_PERSONAL_ACCESS_TOKEN }}
           workflow_file_name: main.yml
+          wait_workflow: false
           ref: master
