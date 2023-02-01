@@ -58,6 +58,7 @@ jobs:
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
           git fetch --tags
           git status --porcelain
+          ./gradlew test
           ./gradlew --refresh-dependencies version
           ./gradlew release -x test
            echo "::set-output name=gitLog::$gitLog"
