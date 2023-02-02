@@ -9,6 +9,10 @@ on:
         required: false      
         type: string
         default: "11"
+      runner:
+        required: false      
+        type: string
+        default: "ubuntu-latest"        
   workflow_dispatch:
 permissions:
   id-token: write
@@ -18,7 +22,7 @@ jobs:
   build:
     if: github.actor != 'dais-machine'
     environment: dev
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - uses: actions/checkout@v3
         with:
