@@ -20,13 +20,6 @@ jobs:
     environment: dev
     runs-on: ubuntu-latest
     steps:
-      - name: Build with Gradle
-        env:
-          GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
-        shell: bash
-        run: |
-          echo ${{ secrets.GRADLE_PROPERTIES }}
-          echo ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
