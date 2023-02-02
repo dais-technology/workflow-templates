@@ -63,12 +63,18 @@ jobs:
           ./gradlew --refresh-dependencies version
           ./gradlew release -x test
            echo "::set-output name=gitLog::$gitLog"
-      - name: Publish Test Report
+      - name: Publish Test Results
         uses: mikepenz/action-junit-report@v3
         if: always()
         with:
           report_paths: 'build/test-results/test/TEST-*.xml'
           require_tests: false
+      - name: Archive Rest Results
+        uses: actions/upload-artifact@v1
+        if: always()
+        with:
+          name: test-results
+          path: 'build/test-results/test/TEST-*.xml'
       - name: Publish
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')      
         id: publish
