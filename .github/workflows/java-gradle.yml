@@ -64,7 +64,7 @@ jobs:
           ./gradlew release -x test
            echo "::set-output name=gitLog::$gitLog"
       - name: Archive Test Results
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test-results
