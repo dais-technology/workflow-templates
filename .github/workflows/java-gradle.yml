@@ -69,7 +69,7 @@ jobs:
         with:
           report_paths: 'build/test-results/test/TEST-*.xml'
           require_tests: false
-      - name: Archive Rest Results
+      - name: Archive Test Results
         uses: actions/upload-artifact@v1
         if: always()
         with:
