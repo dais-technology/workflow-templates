@@ -5,6 +5,7 @@ on:
       aws-role-to-assume:
         required: true
         type: string
+        default: "arn:aws:iam::991853876083:role/spiderman-eks-master-NodeInstanceRole-1CGN6EINNA20W"
       jdk:
         required: false      
         type: string
@@ -14,6 +15,24 @@ on:
         type: string
         default: "ubuntu-latest"        
   workflow_dispatch:
+    inputs:
+      hotfix:
+        required: false
+        type: boolean
+        default: false
+      aws-role-to-assume:
+        required: true
+        type: string
+        default: "arn:aws:iam::991853876083:role/spiderman-eks-master-NodeInstanceRole-1CGN6EINNA20W"
+      jdk:
+        required: false      
+        type: string
+        default: "8"
+      runner:
+        required: false      
+        type: string
+        default: "ubuntu-latest"        
+  
 permissions:
   id-token: write
   contents: read
@@ -74,7 +93,7 @@ jobs:
           path: 'build/test-results/test/TEST-*.xml'
           if-no-files-found: ignore
       - name: Publish
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')      
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: publish
         run: |
           echo ${{ steps.read_version.outputs.build-version }}
@@ -93,7 +112,7 @@ jobs:
           path: 'settings.gradle'
           properties: 'rootProject.name'
       - name: Push values.yaml to DAIS s3
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')      
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         run: |
           project_name=${{ steps.read_project_name.outputs.rootProject-name }}
           if [[ "$project_name" == 'jm-warranty-claim' ]]; then
@@ -110,7 +129,7 @@ jobs:
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
       - name: Create Application and Pipelines - DAIS
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-dais
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -120,7 +139,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
       - name: Create Application and Pipelines - JM
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-jm
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -131,7 +150,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'        
       - name: Deploy To Dev
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -141,7 +160,8 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "tag": "${{ steps.read_version.outputs.build-version }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
       - name: Trigger SDK Build
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')  
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        
         uses: convictional/trigger-workflow-and-wait@v1.6.1
         with:
           owner: dais-technology
