@@ -2,6 +2,10 @@ name: java-gradle-build
 on:
   workflow_call:
     inputs:
+      hotfix:
+        required: false
+        type: boolean
+        default: false    
       aws-role-to-assume:
         required: true
         type: string
