@@ -60,7 +60,7 @@ jobs:
           npm ci --ignore-scripts
           npm run test
           default_branch=$(git branch --show-current)
-          if [[ "$default_branch" = "master" || "$default_branch" = "develop" ]]; then
+          if [[ "$default_branch" = "master" || "$default_branch" = "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
             patch_version=$(npm version patch)
             version=$(node -pe "require('./package.json').version")
             echo "New version is $version"
