@@ -70,8 +70,8 @@ jobs:
               echo "Building hotfix branch..."
               part=$(echo $version | awk '{split($0,a,"."); print a[1]}')
               partWithDashes=$(echo ${part//./-})
-              imageVersion = "${partWithDashes}-${{github.run_number}}-${partialCommit}"              
-              deployVersion = ${imageVersion}
+              imageVersion="${partWithDashes}-${{github.run_number}}-${partialCommit}"              
+              deployVersion=${imageVersion}
             else
               patch_version=$(npm version patch)              
               echo "New version is $version"
