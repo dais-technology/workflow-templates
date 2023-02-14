@@ -57,7 +57,7 @@ jobs:
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
-          npm ci --ignore-scripts
+          npm ci
           npm run test
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
