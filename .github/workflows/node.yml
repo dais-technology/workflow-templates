@@ -5,6 +5,10 @@ on:
       aws-role-to-assume:
         required: true
         type: string
+      hotfix:
+        required: false
+        type: boolean
+        default: false         
   workflow_dispatch:
 permissions:
       id-token: write
@@ -56,8 +60,10 @@ jobs:
           npm ci --ignore-scripts
           npm run test
           default_branch=$(git branch --show-current)
+
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           if [[ "$default_branch" = "master" || "$default_branch" = "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+            patch_version=$(npm version patch)
             version=$(node -pe "require('./package.json').version")
             fullSha=$(git rev-parse HEAD)
             partialCommit=${fullSha:0:6}
@@ -88,7 +94,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
       - name: Create Application and Pipelines - JM
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-jm
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -99,7 +105,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}' 
       - name: Create Application and Pipelines - DAIS
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-dais
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -110,7 +116,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "DAIS"}' 
       - name: Build, tag, and push docker image to Amazon ECR
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'     
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix    
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ steps.npm-build.outputs.projectName }} 
@@ -125,7 +131,7 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg FONTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} --build-arg VUE_APP_SMARTY_STREETS_KEY=${{ secrets.VUE_APP_SMARTY_STREETS_KEY }} --build-arg AG_GRID_LICENSE_KEY='${{ secrets.AG_GRID_LICENSE_KEY }}' .
           docker push $REGISTRY/$REPOSITORY:$VERSION          
       - name: Push values.yaml to DAIS S3
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         run: |
           cat templateValues.yaml > values-${VERSION}.yaml
           echo 'image: ' >> values-${VERSION}.yaml
@@ -140,7 +146,7 @@ jobs:
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
       - name: Deploy To Dev
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -150,11 +156,13 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
       - name: Trigger SDK Build
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         uses: convictional/trigger-workflow-and-wait@v1.6.1
         with:
           owner: dais-technology
           repo: javascript-sdk-minimal
-          github_token: ${{ secrets.ACTIONS_PERSONAL_ACCESS_TOKEN }}
+          github_token: ${{ secrets.DAIS_DEVOPS_TEAM_ACTIONS_PERSONAL_ACCESS_TOKEN }}
           workflow_file_name: main.yml
+          wait_workflow: false
           ref: master
 
