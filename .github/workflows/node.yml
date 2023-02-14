@@ -69,7 +69,7 @@ jobs:
             if [[ "${{ inputs.hotfix }}" ==  "true" ]]; then
               echo "Building hotfix branch..."
               part=$(echo $version | awk '{split($0,a,"."); print a[1]}')
-              partWithDashes=%(echo ${part//./-})
+              partWithDashes=$(echo ${part//./-})
               imageVersion = "${partWithDashes}-${{github.run_number}}-${partialCommit}"              
               deployVersion = ${imageVersion}
             else
