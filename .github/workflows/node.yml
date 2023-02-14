@@ -60,7 +60,6 @@ jobs:
           npm ci --ignore-scripts
           npm run test
           default_branch=$(git branch --show-current)
-
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           if [[ "$default_branch" = "master" || "$default_branch" = "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
             patch_version=$(npm version patch)
@@ -68,6 +67,7 @@ jobs:
             fullSha=$(git rev-parse HEAD)
             partialCommit=${fullSha:0:6}
             if [[ "${{ inputs.hotfix }}" ==  "true" ]]; then
+              echo "Building hotfix branch..."
               part=$(echo $version | awk '{split($0,a,"."); print a[1]}')
               partWithDashes=%(echo ${part//./-})
               imageVersion = "${partWithDashes}-${{github.run_number}}-${partialCommit}"              
