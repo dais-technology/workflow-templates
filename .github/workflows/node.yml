@@ -68,6 +68,7 @@ jobs:
             partialCommit=${fullSha:0:6}
             if [[ "${{ inputs.hotfix }}" ==  "true" ]]; then
               echo "Building hotfix branch..."
+              version=${version}-${default_branch//\//-}
               part=$(echo $version | awk '{split($0,a,"."); print a[1]}')
               partWithDashes=$(echo ${part//./-})
               imageVersion="${partWithDashes}-${{github.run_number}}-${partialCommit}"              
@@ -147,7 +148,7 @@ jobs:
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
       - name: Deploy To Dev
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -157,7 +158,7 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
       - name: Trigger SDK Build
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
         uses: convictional/trigger-workflow-and-wait@v1.6.1
         with:
           owner: dais-technology
