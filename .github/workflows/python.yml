@@ -35,6 +35,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: Python Build and Release
+        env:
+          AWS_REGION: "us-west-2"
+          GATE_ENDPOINT: "https://gate.dais.com"
+          SPINNAKER_TOKEN: "my-fake-token"
+          GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
+          ARTIFACTORY_USERNAME: ${{ secrets.PIP_USERNAME }}
+          ARTIFACTORY_PASSWORD: ${{ secrets.PIP_PASSWORD }}      
         id: build
         shell: bash
         run: |
