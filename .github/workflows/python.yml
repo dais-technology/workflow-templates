@@ -48,7 +48,7 @@ jobs:
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
-          pip3 install .[dev]
+          pip3 install  -i ${{ secrets.DAIS_MACHINE_ARTIFACTORY_CREDS }} .[dev]
           projectName=$(python3 setup.py --name)
           pytest tests --cov-report html --cov-report xml --junitxml=results.xml --cov $projectName/ --reruns 3
           bumpversion patch
