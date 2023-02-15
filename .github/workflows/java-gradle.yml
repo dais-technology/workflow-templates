@@ -36,7 +36,6 @@ on:
         required: false      
         type: string
         default: "ubuntu-latest"        
-  
 permissions:
   id-token: write
   contents: read
