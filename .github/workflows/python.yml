@@ -50,7 +50,7 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           pip3 install  -i ${{ secrets.DAIS_MACHINE_ARTIFACTORY_CREDS }} .[dev]
           projectName=$(python3 setup.py --name)
-          pytest tests --cov-report html --cov-report xml --junitxml=results.xml --cov $projectName/
+          pytest test --cov-report html --cov-report xml --junitxml=results.xml --cov $projectName/
           bumpversion patch
           make build
           make release
