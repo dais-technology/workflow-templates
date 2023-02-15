@@ -13,6 +13,10 @@ on:
         required: false      
         type: string
         default: "ubuntu-latest"
+      run_tests:
+        required: false      
+        type: boolean
+        default: true        
   workflow_dispatch:
 permissions:
   id-token: write
@@ -54,7 +58,9 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           pip3 install  -i ${{ secrets.DAIS_MACHINE_ARTIFACTORY_CREDS }} .[dev]
           projectName=$(python3 setup.py --name)
-          pytest test --cov-report html --cov-report xml --junitxml=results.xml --cov $projectName/
+          if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
+            pytest test --cov-report html --cov-report xml --junitxml=results.xml --cov $projectName/
+          fi
           bumpversion patch
           make build
           make release
