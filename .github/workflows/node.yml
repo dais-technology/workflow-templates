@@ -75,7 +75,6 @@ jobs:
               deployVersion=${imageVersion}
               version=${imageVersion}
             else
-              patch_version=$(npm version patch)              
               echo "New version is $version"
               default_branch=$(git branch --show-current)
               if [[ "$repositoryName" = "ioi-product-clean-answers" ]]; then
