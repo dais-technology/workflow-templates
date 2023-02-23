@@ -156,14 +156,4 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
-      - name: Trigger SDK Build
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
-        uses: convictional/trigger-workflow-and-wait@v1.6.1
-        with:
-          owner: dais-technology
-          repo: javascript-sdk-minimal
-          github_token: ${{ secrets.DAIS_DEVOPS_TEAM_ACTIONS_PERSONAL_ACCESS_TOKEN }}
-          workflow_file_name: main.yml
-          wait_workflow: false
-          ref: master
 
