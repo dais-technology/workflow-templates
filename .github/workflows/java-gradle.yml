@@ -17,7 +17,11 @@ on:
       runner:
         required: false      
         type: string
-        default: "ubuntu-latest"        
+        default: "ubuntu-latest"  
+      account:
+        required: false      
+        type: string
+        default: "DAIS_JM"  
   workflow_dispatch:
     inputs:
       hotfix:
@@ -35,7 +39,11 @@ on:
       runner:
         required: false      
         type: string
-        default: "ubuntu-latest"        
+        default: "ubuntu-latest"
+      account:
+        required: false      
+        type: string
+        default: "DAIS_JM"        
 permissions:
   id-token: write
   contents: read
