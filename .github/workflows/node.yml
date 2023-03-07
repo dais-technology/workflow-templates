@@ -8,7 +8,11 @@ on:
       hotfix:
         required: false
         type: boolean
-        default: false         
+        default: false
+      account:
+        required: false      
+        type: string
+        default: "DAIS_JM"          
   workflow_dispatch:
 permissions:
       id-token: write
