@@ -159,5 +159,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
-          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}' 
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}"}' 
 
