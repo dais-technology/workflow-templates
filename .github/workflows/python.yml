@@ -16,7 +16,11 @@ on:
       run_tests:
         required: false      
         type: boolean
-        default: true        
+        default: true
+      account:
+        required: false      
+        type: string
+        default: "DAIS_JM"          
   workflow_dispatch:
 permissions:
   id-token: write
@@ -112,4 +116,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
-          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}"}'
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "tag": "${{ steps.push.outputs.projectVersion }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}"}'
