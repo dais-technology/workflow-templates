@@ -62,6 +62,7 @@ jobs:
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
+          pip3 install --upgrade pip
           pip3 install  -i ${{ secrets.DAIS_MACHINE_ARTIFACTORY_CREDS }} .[dev]
           projectName=$(python3 setup.py --name)
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
