@@ -92,7 +92,7 @@ jobs:
                 echo 'n' | bit add src/utils/*.js
                 echo 'n' | bit import
                 echo 'n' | bit tag --all
-                echo 'n' |bit export --eject dais-technology.react
+                echo 'n' | bit export dais-technology.react
               fi
               npm publish
               git push origin $default_branch --tags
