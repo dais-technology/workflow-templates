@@ -64,11 +64,10 @@ jobs:
         run: |
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
-          npm i -g bit-bin@14.8.8
+
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci
           npm run test
-          bit config set user.token ${{ secrets.BIT_AUTH_TOKEN }}     
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           if [[ "$default_branch" == "master" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
