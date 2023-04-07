@@ -86,11 +86,13 @@ jobs:
             else
               echo "New version is $version"
               default_branch=$(git branch --show-current)
-              echo 'n' | bit add src/components/*
-              echo 'n' | bit add src/shared/*.js
-              echo 'n' | bit add src/utils/*.js
-              echo 'n' | bit tag --all
-              echo 'n' |bit export --eject dais-technology.react
+              if [[ "$repositoryName" == "shared-react-scaffolding" ]]; then
+                echo 'n' | bit add src/components/*
+                echo 'n' | bit add src/shared/*.js
+                echo 'n' | bit add src/utils/*.js
+                echo 'n' | bit tag --all
+                echo 'n' |bit export --eject dais-technology.react
+              fi
               npm publish
               git push origin $default_branch --tags
             fi
