@@ -90,6 +90,7 @@ jobs:
                 echo 'n' | bit add src/components/*
                 echo 'n' | bit add src/shared/*.js
                 echo 'n' | bit add src/utils/*.js
+                echo 'n' | bit import
                 echo 'n' | bit tag --all
                 echo 'n' |bit export --eject dais-technology.react
               fi
