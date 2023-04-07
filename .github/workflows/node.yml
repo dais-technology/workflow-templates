@@ -69,7 +69,7 @@ jobs:
           npm run test
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
-          if [[ "$default_branch" = "master" || "$default_branch" = "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+          if [[ "$default_branch" == "master" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
             patch_version=$(npm version patch)
             version=$(node -pe "require('./package.json').version")
             fullSha=$(git rev-parse HEAD)
