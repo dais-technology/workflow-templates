@@ -64,6 +64,7 @@ jobs:
         run: |
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
+          npm install -g bit
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci
           npm run test
@@ -85,6 +86,11 @@ jobs:
             else
               echo "New version is $version"
               default_branch=$(git branch --show-current)
+              bit add src/components/*
+              bit add src/shared/*.js
+              bit add src/utils/*.js
+              bit tag --all
+              bit export dais-technology.react
               npm publish
               git push origin $default_branch --tags
             fi
