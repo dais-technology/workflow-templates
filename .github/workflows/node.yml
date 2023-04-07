@@ -86,11 +86,11 @@ jobs:
             else
               echo "New version is $version"
               default_branch=$(git branch --show-current)
-              bit add src/components/*
-              bit add src/shared/*.js
-              bit add src/utils/*.js
-              bit tag --all
-              bit export dais-technology.react
+              echo 'n' | bit add src/components/*
+              echo 'n' | bit add src/shared/*.js
+              echo 'n' | bit add src/utils/*.js
+              echo 'n' | bit tag --all
+              echo 'n' |bit export dais-technology.react
               npm publish
               git push origin $default_branch --tags
             fi
