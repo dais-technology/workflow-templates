@@ -91,6 +91,8 @@ jobs:
                 echo 'n' | bit add src/components/*
                 echo 'n' | bit add src/shared/*.js
                 echo 'n' | bit add src/utils/*.js
+                echo 'n' | bit untrack index
+                echo 'n' | bit untrack src/inndex
                 echo 'n' | bit import
                 echo 'n' | bit tag --all
                 echo 'n' | bit export dais-technology.react
