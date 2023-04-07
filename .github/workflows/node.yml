@@ -68,6 +68,7 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci
           npm run test
+          bit config set user.token ${{ secrets.BIT_AUTH_TOKEN }}     
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           if [[ "$default_branch" == "master" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
