@@ -71,7 +71,7 @@ jobs:
         run: |
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci
           npm run test
@@ -95,8 +95,9 @@ jobs:
               default_branch=$(git branch --show-current)
               if [[ "$repositoryName" == "shared-react-scaffolding" ]]; then
                 npm run build
+                npm publish
               fi
-              npm publish
+
               git push origin $default_branch --tags
             fi
 
