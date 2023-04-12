@@ -159,7 +159,7 @@ jobs:
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
       - name: Deploy To Dev
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
         with:
