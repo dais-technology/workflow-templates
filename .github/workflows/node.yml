@@ -16,7 +16,19 @@ on:
       environment:
         required: false      
         type: string
-        default: "dev"        
+        default: "dev"
+      runE2ETests:
+        required: false
+        type: boolean
+        default: false
+      browser:
+        required: false      
+        type: string
+        default: "ie"
+      applicationUrl:
+        required: false      
+        type: string
+        default: ""                
   workflow_dispatch:
 permissions:
       id-token: write
@@ -168,4 +180,28 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}", "environment": "${{ inputs.environment }}"}' 
+      - name: Run E2E Tests
+        if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop') || inputs.hotfix
+        run: |
+          if [[ "${{ inputs.runE2ETests }}" == "true" ]]; then
+            echo "Selenium Tests - ${{ inputs.browser }}"
+            npm i
+            repo='${{ steps.npm-build.outputs.projectName }}'
+            seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
+            if [[ "${{ inputs.browser}}" == "ie" || "${{ inputs.browser}}" == "all" ]]; then
+              seleniumUrl=${{ inputs.GRID_LAMBDA_URL }}
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=${{ inputs.browser }} npm run test:e2e
+            else if [[ "${{ inputs.browser" != "all" }} ]]; then
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=${{ inputs.browser }} npm run test:e2e
+            else
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=firefox npm run test:e2e
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=chrome npm run test:e2e
+            fi
 
+            if [[ "$seleniumUrl" == *"lambdatest"* ]]; then
+              echo "Selenium E2E test success video recordings can be found https://automation.lambdatest.com/timeline/?viewType=build&page=1&status=passed&build=${env.BUILD_TAG}"
+            else
+              echo "Selenium E2E test success video recordings can be found http://zalenium.service.dev.dais.com/dashboard/?q=${env.BUILD_TAG}%20success\"
+            fi
+              #archiveArtifacts allowEmptyArchive: true, artifacts: '**/screenshots/*.png, **/jest-stare/**', excludes: 'node_modules/**/*'
+            fi
