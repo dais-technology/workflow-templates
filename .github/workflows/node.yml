@@ -188,10 +188,10 @@ jobs:
             npm i
             repo='${{ steps.npm-build.outputs.projectName }}'
             seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
-            if [[ "${{ inputs.browser}}" == "ie" || "${{ inputs.browser}}" == "all" ]]; then
+            if [[ "${{ inputs.browser }}" == "ie" || "${{ inputs.browser }}" == "all" ]]; then
               seleniumUrl=${{ inputs.GRID_LAMBDA_URL }}
               DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=${{ inputs.browser }} npm run test:e2e
-            else if [[ "${{ inputs.browser" != "all" }} ]]; then
+            else if [[ "${{ inputs.browser  }}" != "all" ]]; then
               DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=${{ inputs.browser }} npm run test:e2e
             else
               DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=firefox npm run test:e2e
