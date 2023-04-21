@@ -181,7 +181,7 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}", "environment": "${{ inputs.environment }}"}' 
       - name: Run E2E Tests
-        if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop') || inputs.hotfix
+        if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop') || inputs.runE2ETests
         run: |
           if [[ "${{ inputs.runE2ETests }}" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
