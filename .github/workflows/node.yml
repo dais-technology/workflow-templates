@@ -204,4 +204,3 @@ jobs:
               echo "Selenium E2E test success video recordings can be found http://zalenium.service.dev.dais.com/dashboard/?q=${env.BUILD_TAG}%20success\"
             fi
               #archiveArtifacts allowEmptyArchive: true, artifacts: '**/screenshots/*.png, **/jest-stare/**', excludes: 'node_modules/**/*'
-            fi
