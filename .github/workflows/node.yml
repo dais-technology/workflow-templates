@@ -89,7 +89,7 @@ jobs:
           npm run test
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
-          if [[ "$default_branch" == "master" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+          if [[ "$default_branch" == "master" || "$default_branch" == "develop" || "$default_branch" == "e2etests" || "${{ inputs.hotfix }}" ==  "true" ]]; then
             patch_version=$(npm version patch)
             version=$(node -pe "require('./package.json').version")
             fullSha=$(git rev-parse HEAD)
@@ -119,7 +119,7 @@ jobs:
             echo "::set-output name=gitLog::$gitLog"
           fi
       - name: Create Application and Pipelines - JM
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || github.ref == 'refs/heads/e2etests') || inputs.hotfix
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || github.ref == 'refs/heads/e2etests' || inputs.hotfix
         id: create-app-and-pipelines-jm
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -130,7 +130,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}' 
       - name: Create Application and Pipelines - DAIS
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || "$default_branch" == "e2etests" || inputs.hotfix
         id: create-app-and-pipelines-dais
         uses: gagoar/invoke-aws-lambda@master
         with:
@@ -181,7 +181,7 @@ jobs:
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}", "environment": "${{ inputs.environment }}"}' 
       - name: Run E2E Tests
-        if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop') || inputs.runE2ETests
+        if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop') || github.ref == 'refs/heads/e2etests' || inputs.runE2ETests
         run: |
           if [[ "${{ inputs.runE2ETests }}" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
