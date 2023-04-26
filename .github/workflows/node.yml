@@ -20,7 +20,7 @@ on:
       runE2ETests:
         required: false
         type: boolean
-        default: false
+        default: true
       browser:
         required: false      
         type: string
