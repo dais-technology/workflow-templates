@@ -72,7 +72,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - run: aws sts get-caller-identity
       - name: Run E2E Tests
-        with:      
+        env:      
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
           FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
