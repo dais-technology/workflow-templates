@@ -197,9 +197,9 @@ jobs:
               DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=firefox npm run test:e2e
               DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=chrome npm run test:e2e
             fi
-
             if [[ "$seleniumUrl" == *"lambdatest"* ]]; then
               echo "Selenium E2E test success video recordings can be found https://automation.lambdatest.com/timeline/?viewType=build&page=1&status=passed&build=${env.BUILD_TAG}"
             else
               echo "Selenium E2E test success video recordings can be found http://zalenium.service.dev.dais.com/dashboard/?q=${env.BUILD_TAG}%20success"
             fi
+          fi
