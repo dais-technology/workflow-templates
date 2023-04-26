@@ -130,7 +130,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}' 
       - name: Create Application and Pipelines - DAIS
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || "$default_branch" == "e2etests" || inputs.hotfix
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || github.ref == 'refs/heads/e2etests' || inputs.hotfix
         id: create-app-and-pipelines-dais
         uses: gagoar/invoke-aws-lambda@master
         with:
