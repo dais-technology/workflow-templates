@@ -74,7 +74,7 @@ jobs:
       - name: Run E2E Tests
         if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/develop') || github.ref == 'refs/heads/e2etests' || inputs.runE2ETests
         run: |
-          if [[ "${{ inputs.runE2ETests }}" == "true" ]]; then
+          if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
             npm i
             repo='${{ steps.npm-build.outputs.projectName }}'
