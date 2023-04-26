@@ -115,6 +115,7 @@ jobs:
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
+          npm install jest-stare
           npm ci
           npm run test
           default_branch=$(git branch --show-current)
