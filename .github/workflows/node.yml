@@ -83,7 +83,6 @@ jobs:
         run: |
           if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
-            npm i jest-stare
             npm ci
             npm run test
             repo='${{ steps.npm-build.outputs.projectName }}'
