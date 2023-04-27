@@ -83,7 +83,6 @@ jobs:
         run: |
           if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
-            npm install -g npm@latest
             npm i
             npm run test
             repo='${{ steps.npm-build.outputs.projectName }}'
