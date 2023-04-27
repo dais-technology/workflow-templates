@@ -59,7 +59,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: '10.0.0'
           registry-url: 'https://registry.npmjs.org'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -83,6 +83,7 @@ jobs:
         run: |
           if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
+            npm i jest-stare
             npm i
             repo='${{ steps.npm-build.outputs.projectName }}'
             seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
