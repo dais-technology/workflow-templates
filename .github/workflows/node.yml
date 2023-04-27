@@ -185,6 +185,7 @@ jobs:
         run: |
           if [[ "${{ inputs.runE2ETests }}" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
+            npm i jest-stare
             npm i
             repo='${{ steps.npm-build.outputs.projectName }}'
             seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
