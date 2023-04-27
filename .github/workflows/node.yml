@@ -85,6 +85,7 @@ jobs:
             echo "Selenium Tests - ${{ inputs.browser }}"
             npm i
             npm run test
+            npm install -g npm@latest 
             repo='${{ steps.npm-build.outputs.projectName }}'
             seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
             if [[ "${{ inputs.browser }}" == "ie" || "${{ inputs.browser }}" == "all" ]]; then
