@@ -83,7 +83,7 @@ jobs:
         run: |
           if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
-            npm ci
+            npm i
             npm run test
             repo='${{ steps.npm-build.outputs.projectName }}'
             seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
