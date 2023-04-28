@@ -79,7 +79,9 @@ jobs:
           FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
           BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}     
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          DAIS_ADMIN_USERNAME: ${{ secrets.DAIS_ADMIN_USERNAME }}
+          DAIS_ADMIN_PASSWORD: ${{ secrets.DAIS_ADMIN_PASSWORD }}             
         run: |
           if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
