@@ -81,7 +81,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           DAIS_ADMIN_USERNAME: ${{ secrets.DAIS_ADMIN_USERNAME }}
-          DAIS_ADMIN_PASSWORD: ${{ secrets.DAIS_ADMIN_PASSWORD }}             
+          DAIS_ADMIN_PASSWORD: ${{ secrets.DAIS_ADMIN_PASSWORD }}     
+          DAIS_APP_CLIENT_ID: "3ug0tl7h5asgfnhd33g6m5r3eb"
+          DAIS_APP_USER_POOL_ID: "us-west-2_MzEdZmUQC"          
         run: |
           if [[ "true" == "true" ]]; then
             echo "Selenium Tests - ${{ inputs.browser }}"
