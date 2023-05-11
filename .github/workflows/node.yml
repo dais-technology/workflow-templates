@@ -204,3 +204,4 @@ jobs:
             else
               echo "Selenium E2E test success video recordings can be found http://zalenium.service.dev.dais.com/dashboard/?q=${env.BUILD_TAG}%20success"
             fi
+          fi
