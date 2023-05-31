@@ -28,7 +28,11 @@ on:
       applicationUrl:
         required: false      
         type: string
-        default: ""                
+        default: ""
+      run_tests:
+        required: false      
+        type: boolean
+        default: true    
   workflow_dispatch:
 permissions:
       id-token: write
@@ -86,7 +90,9 @@ jobs:
           #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci
-          npm run test
+          if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
+            npm run test
+          fi
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           if [[ "$default_branch" == "master" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
