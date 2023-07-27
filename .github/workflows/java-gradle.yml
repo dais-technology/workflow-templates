@@ -5,27 +5,27 @@ on:
       hotfix:
         required: false
         type: boolean
-        default: false    
+        default: false
       aws-role-to-assume:
         required: true
         type: string
         default: "arn:aws:iam::991853876083:role/spiderman-eks-master-NodeInstanceRole-1CGN6EINNA20W"
       jdk:
-        required: false      
+        required: false
         type: string
         default: "8"
       runner:
-        required: false      
+        required: false
         type: string
-        default: "ubuntu-latest"  
+        default: "ubuntu-latest"
       account:
-        required: false      
+        required: false
         type: string
         default: "DAIS_JM"
       environment:
-        required: false      
+        required: false
         type: string
-        default: "dev"          
+        default: "dev"
   workflow_dispatch:
     inputs:
       hotfix:
@@ -37,21 +37,21 @@ on:
         type: string
         default: "arn:aws:iam::991853876083:role/spiderman-eks-master-NodeInstanceRole-1CGN6EINNA20W"
       jdk:
-        required: false      
+        required: false
         type: string
         default: "8"
       runner:
-        required: false      
+        required: false
         type: string
         default: "ubuntu-latest"
       account:
-        required: false      
+        required: false
         type: string
         default: "DAIS_JM"
       environment:
-        required: false      
+        required: false
         type: string
-        default: "dev"        
+        default: "dev"
 permissions:
   id-token: write
   contents: read
@@ -70,7 +70,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ inputs.jdk }}
-          distribution: 'adopt'
+          distribution: "adopt"
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -102,14 +102,14 @@ jobs:
         uses: mikepenz/action-junit-report@v3
         if: always()
         with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          report_paths: "**/build/test-results/test/TEST-*.xml"
           require_tests: false
       - name: Archive Test Results
         uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test-results
-          path: 'build/test-results/test/TEST-*.xml'
+          path: "build/test-results/test/TEST-*.xml"
           if-no-files-found: ignore
       - name: Publish
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
@@ -122,14 +122,14 @@ jobs:
         id: read_version
         uses: christian-draeger/read-properties@1.1.0
         with:
-          path: 'version.txt'
-          properties: 'build.version'
+          path: "version.txt"
+          properties: "build.version"
       - name: Read Project Name
         id: read_project_name
         uses: christian-draeger/read-properties@1.1.0
         with:
-          path: 'settings.gradle'
-          properties: 'rootProject.name'
+          path: "settings.gradle"
+          properties: "rootProject.name"
       - name: Push values.yaml to DAIS s3
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         run: |
@@ -147,27 +147,27 @@ jobs:
           aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://jm-helm-charts/packagevalues/${project_name}/values-${{ steps.read_version.outputs.build-version }}.yaml
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-      - name: Create Application and Pipelines - DAIS
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
-        id: create-app-and-pipelines-dais
-        uses: gagoar/invoke-aws-lambda@master
-        with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-          FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
-      - name: Create Application and Pipelines - JM
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
-        id: create-app-and-pipelines-jm
-        uses: gagoar/invoke-aws-lambda@master
-        with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-          InvocationType: Event
-          FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'        
+      # - name: Create Application and Pipelines - DAIS
+      #   if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+      #   id: create-app-and-pipelines-dais
+      #   uses: gagoar/invoke-aws-lambda@master
+      #   with:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+      #     REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+      #     FunctionName: spinnaker-pipelines-dev-deployer
+      #     Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
+      # - name: Create Application and Pipelines - JM
+      #   if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+      #   id: create-app-and-pipelines-jm
+      #   uses: gagoar/invoke-aws-lambda@master
+      #   with:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+      #     REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+      #     InvocationType: Event
+      #     FunctionName: spinnaker-pipelines-dev-deployer
+      #     Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'
       - name: Deploy To Dev
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
@@ -178,4 +178,3 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-trigger-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "tag": "${{ steps.read_version.outputs.build-version }}", "gitLog": "${{ steps.build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}", "environment": "${{ inputs.environment }}"}'
-
