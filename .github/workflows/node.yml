@@ -32,7 +32,11 @@ on:
       run_tests:
         required: false      
         type: boolean
-        default: true    
+        default: true
+      node_version:
+        required: false      
+        type: string
+        default: '14.21.0'         
   workflow_dispatch:
 permissions:
       id-token: write
@@ -63,7 +67,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '14.21.0'
+          node-version: ${{ inputs.node_version }}
           registry-url: 'https://registry.npmjs.org'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
