@@ -80,6 +80,19 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+      - name: Create Application and Pipelines - DAIS
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        id: create-app-and-pipelines-dais-first
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "spinnaker-utils", "template": "backebd-spring", "account": "DAIS"}'
+      - name: Store tail logs to file
+        if: always()      
+        run: echo "${{ fromJSON(steps.create-app-and-pipelines-dais-first.outputs.response).LogResult }}" > invocation-logs.json        
       - name: Build with Gradle
         id: build
         env:
@@ -158,6 +171,7 @@ jobs:
           FunctionName: spinnaker-pipelines-dev-deployer
           Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
       - name: Store tail logs to file
+        if: always()      
         run: echo "${{ fromJSON(steps.create-app-and-pipelines-dais.outputs.response).LogResult }}" > invocation-logs.json
       - name: Create Application and Pipelines - JM
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
