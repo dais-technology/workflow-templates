@@ -147,27 +147,29 @@ jobs:
           aws s3 cp values-${{ steps.read_version.outputs.build-version }}.yaml s3://jm-helm-charts/packagevalues/${project_name}/values-${{ steps.read_version.outputs.build-version }}.yaml
         env:
           AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-      # - name: Create Application and Pipelines - DAIS
-      #   if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
-      #   id: create-app-and-pipelines-dais
-      #   uses: gagoar/invoke-aws-lambda@master
-      #   with:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-      #     REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-      #     FunctionName: spinnaker-pipelines-dev-deployer
-      #     Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
-      # - name: Create Application and Pipelines - JM
-      #   if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
-      #   id: create-app-and-pipelines-jm
-      #   uses: gagoar/invoke-aws-lambda@master
-      #   with:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-      #     REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-      #     InvocationType: Event
-      #     FunctionName: spinnaker-pipelines-dev-deployer
-      #     Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'
+      - name: Create Application and Pipelines - DAIS
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        id: create-app-and-pipelines-dais
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
+      - name: Store tail logs to file
+        run: echo "${{ fromJSON(create-app-and-pipelines-dais.foobar.outputs.response).LogResult }}" > invocation-logs.json
+      - name: Create Application and Pipelines - JM
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        id: create-app-and-pipelines-jm
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'
       - name: Deploy To Dev
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
