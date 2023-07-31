@@ -1,0 +1,221 @@
+name: Node build
+on:
+  workflow_call:
+    inputs:
+      aws-role-to-assume:
+        required: true
+        type: string
+      hotfix:
+        required: false
+        type: boolean
+        default: false
+      account:
+        required: false
+        type: string
+        default: "DAIS_JM"
+      environment:
+        required: false
+        type: string
+        default: "dev"
+      runE2ETests:
+        required: false
+        type: boolean
+        default: false
+      browser:
+        required: false
+        type: string
+        default: "ie"
+      applicationUrl:
+        required: false
+        type: string
+        default: ""
+      run_tests:
+        required: false
+        type: boolean
+        default: true
+      node_version:
+        required: false
+        type: string
+        default: "20.1.0"
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  build:
+    if: github.actor != 'dais-machine'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.DAIS_MACHINE_GITHUB_TOKEN }}
+      - uses: jfrog/setup-jfrog-cli@v2
+        env:
+          JF_URL: ${{ secrets.JF_URL }}
+          JF_USER: ${{ secrets.JF_USER }}
+          JF_PASSWORD: ${{ secrets.JF_PASSWORD }}
+      - name: Login
+        uses: atlassian/gajira-login@master
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      - name: Find in commit messages
+        uses: atlassian/gajira-find-issue-key@master
+        with:
+          from: ${{ github.head_ref }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node_version }}
+          registry-url: "https://registry.npmjs.org"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ inputs.aws-role-to-assume }}
+          aws-region: us-west-2
+          role-session-name: AWSSession
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - run: aws sts get-caller-identity
+      - name: Install Dependencies and Run Unit Tests
+        id: npm-build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
+          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
+          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
+          git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
+          #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
+          npm ci
+          if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
+            npm run test
+          fi
+          default_branch=$(git branch --show-current)
+          repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
+          if [[ "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+            patch_version=$(npm version patch)
+            version=$(node -pe "require('./package.json').version")
+            fullSha=$(git rev-parse HEAD)
+            partialCommit=${fullSha:0:6}
+            if [[ "${{ inputs.hotfix }}" ==  "true" ]]; then
+              echo "Building hotfix branch..."
+              version=${version}-${default_branch//\//-}
+              part=$(echo $version | awk '{split($0,a,"."); print a[1]}')
+              partWithDashes=$(echo ${part//./-})
+              imageVersion="${partWithDashes}-${{github.run_number}}-${partialCommit}"              
+              deployVersion=${imageVersion}
+              version=${imageVersion}
+            else
+              echo "New version is $version"
+              default_branch=$(git branch --show-current)
+              if [[ "$repositoryName" == "shared-react-scaffolding" ]]; then
+                npm run build
+              fi
+              if [[ "$repositoryName" == "ioi-product-clean-answers" ||  "$repositoryName" == "shared-react-scaffolding" ]]; then
+                npm publish
+              fi
+              git push origin $default_branch --tags
+            fi
+
+            echo "::set-output name=imageVersion::$version"
+            echo "::set-output name=projectName::$repositoryName"
+            echo "::set-output name=gitLog::$gitLog"
+          fi
+      - name: Create Application and Pipelines - JM
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        id: create-app-and-pipelines-jm
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}'
+      - name: Create Application and Pipelines - DAIS
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        id: create-app-and-pipelines-dais
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          InvocationType: Event
+          FunctionName: spinnaker-pipelines-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "DAIS"}'
+      - name: Build, tag, and push docker image to Amazon ECR
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ steps.npm-build.outputs.projectName }}
+          VERSION: ${{ steps.npm-build.outputs.imageVersion }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
+          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
+          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg FONTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} --build-arg VUE_APP_SMARTY_STREETS_KEY=${{ secrets.VUE_APP_SMARTY_STREETS_KEY }} --build-arg AG_GRID_LICENSE_KEY='${{ secrets.AG_GRID_LICENSE_KEY }}' .
+          docker push $REGISTRY/$REPOSITORY:$VERSION
+      - name: Archive npm failure logs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: npm-logs
+          path: ~/.npm/_logs
+      - name: Push values.yaml to DAIS S3
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        run: |
+          cat templateValues.yaml > values-${VERSION}.yaml
+          echo 'image: ' >> values-${VERSION}.yaml
+          echo '   repository: '991853876083.dkr.ecr.us-west-2.amazonaws.com/${PROJECT_NAME} >> values-${VERSION}.yaml
+          echo '   pullPolicy: 'Always >> values-${PROJECT_NAME}.yaml
+          echo '   tag: '${VERSION} >> values-${VERSION}.yaml          
+          aws s3 cp values-${VERSION}.yaml s3://dais-helm-charts/packagevalues/${PROJECT_NAME}/values-${VERSION}.yaml
+          sed -i -e 's/all-dais-com-tls/all-dais-jm-com-tls/; s/dais.com/dais-jm.com/;' values-${VERSION}.yaml
+          aws s3 cp values-${VERSION}.yaml s3://jm-helm-charts/packagevalues/${PROJECT_NAME}/values-${VERSION}.yaml
+        env:
+          AWS_REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          VERSION: ${{ steps.npm-build.outputs.imageVersion }}
+          PROJECT_NAME: ${{ steps.npm-build.outputs.projectName }}
+      - name: Deploy To Dev
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        id: deploy-to-dev
+        uses: gagoar/invoke-aws-lambda@master
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
+          FunctionName: spinnaker-trigger-dev-deployer
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "tag": "${{ steps.npm-build.outputs.imageVersion }}", "gitLog": "${{ steps.npm-build.outputs.gitLog }}", "repositoryName": "${{ github.repository }}", "account": "${{ inputs.account }}", "environment": "${{ inputs.environment }}"}'
+      - name: Run E2E Tests
+        if: (github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop') || inputs.runE2ETests
+        run: |
+          if [[ "${{ inputs.runE2ETests }}" == "true" ]]; then
+            echo "Selenium Tests - ${{ inputs.browser }}"
+            npm i
+            repo='${{ steps.npm-build.outputs.projectName }}'
+            seleniumUrl=${{ inputs.ACTIONS_SE_GRID }}
+            if [[ "${{ inputs.browser }}" == "ie" || "${{ inputs.browser }}" == "all" ]]; then
+              seleniumUrl=${{ inputs.GRID_LAMBDA_URL }}
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=${{ inputs.browser }} npm run test:e2e
+            elif [[ "${{ inputs.browser  }}" != "all" ]]; then
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=${{ inputs.browser }} npm run test:e2e
+            else
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=firefox npm run test:e2e
+              DAIS_ENV=${{ inputs.environment }} ROOT_URL=${{ inputs.applicationUrl }} REMOTE_SERVER_URL=$seleniumUrl E2E_BROWSER=chrome npm run test:e2e
+            fi
+            if [[ "$seleniumUrl" == *"lambdatest"* ]]; then
+              echo "Selenium E2E test success video recordings can be found https://automation.lambdatest.com/timeline/?viewType=build&page=1&status=passed&build=${env.BUILD_TAG}"
+            else
+              echo "Selenium E2E test success video recordings can be found http://zalenium.service.dev.dais.com/dashboard/?q=${env.BUILD_TAG}%20success"
+            fi
+          fi
