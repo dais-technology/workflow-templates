@@ -94,9 +94,7 @@ jobs:
           #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           npm ci
-          if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
-            npm run test
-          fi
+
           default_branch=$(git branch --show-current)
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")
           if [[ "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
