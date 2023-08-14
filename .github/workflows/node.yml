@@ -93,6 +93,10 @@ jobs:
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
+          npm install
+          git add package-lock.json
+          git commit -m"Updated package json"
+          git push origin develop
           npm ci
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
             npm run test
