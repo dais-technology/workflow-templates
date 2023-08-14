@@ -171,6 +171,10 @@ jobs:
         with:
           name: npm-logs
           path: ~/.npm/_logs
+      - name: Git Status
+        if: failure()
+        run: |
+          git status
       - name: Push values.yaml to DAIS S3
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         run: |
