@@ -58,10 +58,12 @@ jobs:
           git status --porcelain
           #./gradlew test
           ./gradlew --refresh-dependencies version          
-          if [[ "${{ inputs.hotfix }}" ==  "false" ]]; then
+          if [[ "${{ inputs.hotfix }}" ==  "true" ]]; then
+            ./gradlew version -x test
+          else
             ./gradlew release -x test
           fi
-           echo "::set-output name=gitLog::$gitLog"
+          echo "::set-output name=gitLog::$gitLog"
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v3
         if: always()
