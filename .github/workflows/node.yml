@@ -94,7 +94,9 @@ jobs:
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")          
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           if [[ "$repositoryName" == "pl-claims-hub" ]]; then
-            #npm i ./angular-elements/diamond-search-1.0.2.tgz            
+            #npm i ./angular-elements/diamond-search-1.0.2.tgz
+            npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONTAWESOME_TOKEN }}"
+            npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONTAWESOME_TOKEN }}"
             cat /home/runner/work/_temp/.npmrc
             cat ./.npmrc
             npm ci
