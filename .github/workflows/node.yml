@@ -95,8 +95,8 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           if [[ "$repositoryName" == "pl-claims-hub" ]]; then
             #npm i ./angular-elements/diamond-search-1.0.2.tgz
-            echo ${{ secrets.JM_NPMRC }} > /home/runner/work/_temp/.npmrc
-            echo ${{ secrets.JM_NPMRC }} > ./.npmrc
+            echo "${{ secrets.JM_NPMRC }}" > /home/runner/work/_temp/.npmrc
+            echo "${{ secrets.JM_NPMRC }}" > ./.npmrc
             echo "=================================== home npm"
             cat /home/runner/work/_temp/.npmrc
             echo "=================================== home npm"
