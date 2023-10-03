@@ -81,14 +81,6 @@ jobs:
       - run: aws sts get-caller-identity
       - name: Install Dependencies and Run Unit Tests
         id: npm-build
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
-          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
-          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-          AZURE_TOKEN: ${{ secrets.AZURE_TOKEN }}
         run: |
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
@@ -135,6 +127,14 @@ jobs:
             echo "::set-output name=projectName::$repositoryName"
             echo "::set-output name=gitLog::$gitLog"
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
+          FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
+          BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          AZURE_TOKEN: ${{ secrets.AZURE_TOKEN }}
       - name: Create Application and Pipelines - JM
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-jm
