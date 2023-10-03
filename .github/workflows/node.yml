@@ -79,13 +79,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - run: aws sts get-caller-identity
-#      - uses: ponicode/azure-devops-npm-action@master
-#        with:
-#            organisation: jewelers-mutual
-#            registry: "https://pkgs.dev.azure.com/jewelers-mutual/Zing/_packaging/zing-npm-feed-pkg/npm/registry/"
-#            user: jewelers-mutual
-#            password: ${{ secrets.AZURE_TOKEN }}
-#            email: pdulovic@jminsure.com      
       - name: Install Dependencies and Run Unit Tests
         id: npm-build
         run: |
@@ -95,23 +88,8 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           if [[ "$repositoryName" == "pl-claims-hub" ]]; then
             #npm i ./angular-elements/diamond-search-1.0.2.tgz
-            echo "${{ secrets.JM_NPMRC }}" > /home/runner/work/_temp/.npmrc
-            echo "${{ secrets.JM_NPMRC }}" > ./.npmrc
-            echo "=================================== home npm"
-            cat /home/runner/work/_temp/.npmrc
-            echo "=================================== home npm"
-            echo "=================================== project npm"
-            cat ./.npmrc >> /home/runner/work/_temp/.npmrc
-            echo "=================================== project npm"
-            npm install -g better-vsts-npm-auth
-            better-vsts-npm-auth
-
-            npm cache clean --force
-            npm i
-            git commit -am"Packages updated"
-          else
-            npm ci
           fi
+          npm ci
           
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
             npm run test
