@@ -97,8 +97,12 @@ jobs:
             #npm i ./angular-elements/diamond-search-1.0.2.tgz
             npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONTAWESOME_TOKEN }}"
             npm config set '//npm.fontawesome.com/:_authToken' "${{ secrets.FONTAWESOME_TOKEN }}"
+            echo "=================================== home npm"
             cat /home/runner/work/_temp/.npmrc
+            echo "=================================== home npm"
+            echo "=================================== project npm"
             cat ./.npmrc
+            echo "=================================== project npm"
             npm ci
             git commit -am"Packages updated"
           else
