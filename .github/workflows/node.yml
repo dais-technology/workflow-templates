@@ -79,6 +79,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - run: aws sts get-caller-identity
+      - uses: ponicode/azure-devops-npm-action@master
+        with:
+            organisation: jewelers-mutual
+            registry: "https://pkgs.dev.azure.com/jewelers-mutual/Zing/_packaging/zing-npm-feed-pkg/npm/registry/"
+            user: jewelers-mutual
+            password: ${{ secrets.AZURE_TOKEN }}
+            email: pdulovic@jminsure.com      
       - name: Install Dependencies and Run Unit Tests
         id: npm-build
         run: |
