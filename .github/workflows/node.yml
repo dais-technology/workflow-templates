@@ -103,7 +103,8 @@ jobs:
             echo "=================================== project npm"
             cat ./.npmrc >> /home/runner/work/_temp/.npmrc
             echo "=================================== project npm"
-            npm ci
+            npm cache clean --force
+            npm i
             git commit -am"Packages updated"
           else
             npm ci
