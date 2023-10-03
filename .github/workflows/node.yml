@@ -92,6 +92,7 @@ jobs:
             npm install -g better-vsts-npm-auth
             better-vsts-npm-auth config set refresh_token eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Im9PdmN6NU1fN3AtSGpJS2xGWHo5M3VfVjBabyJ9.eyJuYW1laWQiOiI1ZjE5YzQ0MS0yOTMyLTYwOGYtOThhZi1mNjJlMmQ2MDMwNTIiLCJhY2kiOiI2Mjg1YzdhMC1lMGU3LTRmZGUtOTc3NS01MTc1M2U4NjkwOTgiLCJzY3AiOiJ2c28ucGFja2FnaW5nX3dyaXRlIiwiaXNzIjoiYXBwLnZzdG9rZW4udmlzdWFsc3R1ZGlvLmNvbSIsImF1ZCI6ImFwcC52c3Rva2VuLnZpc3VhbHN0dWRpby5jb20iLCJuYmYiOjE2OTYzNjcxMjQsImV4cCI6MTcyNzk4OTUyNH0.q-9Q_6dcuiPFU24TyNWRmgkizKuV0RORmfJnWEPMOxHodliDqhBDOlDUWjoBO9FFPGGgUuHjWP99fr_6gFMN9fA4VI1YXvYt4weE-PMQAAxVYwgyZDb0LqTQJRFScDMyvc_8Bqs_X8s4fmWuuvJ9Opk1uuBs5C12ifPnMWYYUeYBQ354qqO_iTpiC4JnsRXNIcxCAucegKILuRKDlDtsF9Y_ijkvPcj4zoznReIkO84dCNDvtnrLU-E2wqcxlH9Y5asYgXkBX2TcUjE_S8jXcmALn9llYlykwu1RKRYcQ_oxaRDizv6K4SbGzaw4rczSVhf2exEDyR-NKCUvj-0qHw
             better-vsts-npm-auth -config .npmrc
+            cat /home/runner/work/_temp/.npmrc
             #npm i ./angular-elements/diamond-search-1.0.2.tgz
           fi
           npm ci
