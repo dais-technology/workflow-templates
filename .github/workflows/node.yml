@@ -87,9 +87,6 @@ jobs:
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")          
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           if [[ "$repositoryName" == "pl-claims-hub" ]]; then
-            npm install -g better-vsts-npm-auth
-            #better-vsts-npm-auth config set refresh_token eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Im9PdmN6NU1fN3AtSGpJS2xGWHo5M3VfVjBabyJ9.eyJuYW1laWQiOiI1ZjE5YzQ0MS0yOTMyLTYwOGYtOThhZi1mNjJlMmQ2MDMwNTIiLCJhY2kiOiIwYmZkYjA1OC1kMmRmLTQwYjctYmIyMS1mMjQ3YjUwZjAyMjMiLCJzY3AiOiJ2c28ucGFja2FnaW5nX3dyaXRlIiwiaXNzIjoiYXBwLnZzdG9rZW4udmlzdWFsc3R1ZGlvLmNvbSIsImF1ZCI6ImFwcC52c3Rva2VuLnZpc3VhbHN0dWRpby5jb20iLCJuYmYiOjE2OTYzNjgxOTcsImV4cCI6MTcyNzk5MDU5N30.LQ57dmhC_HKCj4MLa12vHg-u5IL-cOXWVP6rUUGLfIfQBbOGdZk5AXgxqUy7G7pabLCDAnlhUQFXXcss1SVpGwecihVCDZ4Jybj85QaOBNF1Qy6K2ylduxm8qehLuyL4361sRVX3pU6clO8skzNoQXw1XsbTj7_do0do7MkKDslOxVzFxdrzZIBANfiz8qd9FOOByRLxXm82U1U45JfXJ28YrzhGQld_tITNOCtpmB49RflymuxlhPAdxnKfVhKvur66fW1UxXlJf-N7v4AAExD0cw_XXqi8xGXy8hDOK8t1JGxdsjl0pSmsBrDCQA8lYENKTViRdsMnknxlRQjXSw
-            #better-vsts-npm-auth -F -config .npmrc
             npm i ./angular-elements/diamond-search-1.0.2.tgz            
             cat /home/runner/work/_temp/.npmrc
             cat ./.npmrc
