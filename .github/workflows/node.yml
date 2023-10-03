@@ -92,9 +92,12 @@ jobs:
             better-vsts-npm-auth -F -config .npmrc
             cat /home/runner/work/_temp/.npmrc
             cat ./.npmrc
+            npm i
             #npm i ./angular-elements/diamond-search-1.0.2.tgz
+          else
+            npm ci
           fi
-          npm ci
+          
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
             npm run test
           fi
