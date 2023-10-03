@@ -103,9 +103,10 @@ jobs:
             echo "=================================== project npm"
             cat ./.npmrc >> /home/runner/work/_temp/.npmrc
             echo "=================================== project npm"
-            npm cache clean --force
             npm install -g better-vsts-npm-auth
             better-vsts-npm-auth -config .npmrc -T -f $HOME/.npmrc
+
+            npm cache clean --force
             npm i
             git commit -am"Packages updated"
           else
