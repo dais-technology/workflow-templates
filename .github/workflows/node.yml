@@ -88,15 +88,17 @@ jobs:
           BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
+          AZURE_TOKEN: ${{ secrets. AZURE_TOKEN }}
         run: |
-         
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")          
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           if [[ "$repositoryName" == "pl-claims-hub" ]]; then
-            npm i ./angular-elements/diamond-search-1.0.2.tgz
+            npm install -g vsts-npm-auth
+            vsts-npm-auth -config .npmrc
+            #npm i ./angular-elements/diamond-search-1.0.2.tgz
           fi
           npm ci
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
