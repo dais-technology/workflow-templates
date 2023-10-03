@@ -93,6 +93,9 @@ jobs:
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           #echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
+          if [[ "$repositoryName" == "pl-claims-hub" ]]; then
+            npm i ./angular-elements/diamond-search-1.0.2.tgz
+          fi
           npm ci
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
             npm run test
