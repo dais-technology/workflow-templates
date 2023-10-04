@@ -88,6 +88,8 @@ jobs:
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
           if [[ "$repositoryName" == "pl-claims-hub" ]]; then
             #npm i ./angular-elements/diamond-search-1.0.2.tgz
+            npm install -g better-vsts-npm-auth
+            better-vsts-npm-auth -config .npmrc
           fi
           npm ci
           
