@@ -95,7 +95,7 @@ jobs:
           fi
           npm ci
           
-          if [[ "${{ inputs.run_tests }}" ==  "true" || "$repositoryName" && "pl-claims-hub"  ]]; then
+          if [[ "${{ inputs.run_tests }}" ==  "true" && "$repositoryName" != "pl-claims-hub"  ]]; then
             npm run test
           fi
           default_branch=$(git branch --show-current)
