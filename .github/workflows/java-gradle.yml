@@ -156,7 +156,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "DAIS"}'
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backend-spring", "account": "DAIS"}'
       - name: Create Application and Pipelines - JM
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-jm
@@ -167,7 +167,7 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           InvocationType: Event
           FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backebd-spring", "account": "JM"}'
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backend-spring", "account": "JM"}'
       - name: Deploy To Dev
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
