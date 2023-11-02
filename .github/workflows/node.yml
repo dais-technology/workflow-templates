@@ -92,7 +92,7 @@ jobs:
             better-vsts-npm-auth -config .npmrc
           fi
           npm ci
-          
+          git commit -am"Build modified files"
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
             npm run test
           fi
