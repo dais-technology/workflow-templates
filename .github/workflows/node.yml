@@ -91,9 +91,6 @@ jobs:
             better-vsts-npm-auth config set refresh_token ${{ secrets. AZURE_REFRESH_TOKEN }}
             better-vsts-npm-auth -config .npmrc
           fi
-          if [[ "$repositoryName" == "internet-of-insurance" ]]; then
-            npm install 
-          fi
           
           npm ci
           git commit -am"Build modified files" || echo 'No files changed'
