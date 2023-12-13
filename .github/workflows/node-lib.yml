@@ -65,7 +65,7 @@ jobs:
           git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
-          if [[ "$repositoryName" = "internet-of-insurance" ]]; then
+          if [[ "$repositoryName" == "internet-of-insurance" ]]; then
             npm install
           fi          
 
