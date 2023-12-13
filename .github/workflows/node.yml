@@ -130,6 +130,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
+          JFROG_NPM_TOKEN_READ: ${{ secrets.JFROG_NPM_TOKEN_READ }}
           FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
           BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
@@ -167,6 +168,7 @@ jobs:
           VERSION: ${{ steps.npm-build.outputs.imageVersion }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN_READ: ${{ secrets.NPM_TOKEN }}
+          JFROG_NPM_TOKEN_READ: ${{ secrets.JFROG_NPM_TOKEN_READ }}
           FONTAWESOME_TOKEN: ${{ secrets.FONTAWESOME_TOKEN }}
           BIT_AUTH_TOKEN: ${{ secrets.BIT_AUTH_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
@@ -174,7 +176,7 @@ jobs:
           AZURE_TOKEN: ${{ secrets.AZURE_TOKEN }}
           AZURE_REFRESH_TOKEN: ${{ secrets.AZURE_REFRESH_TOKEN }}
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg FONTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} --build-arg AZURE_TOKEN=${{ secrets.AZURE_TOKEN }} --build-arg AZURE_REFRESH_TOKEN='${{ secrets.AZURE_REFRESH_TOKEN }}' --build-arg VUE_APP_SMARTY_STREETS_KEY=${{ secrets.VUE_APP_SMARTY_STREETS_KEY }} --build-arg AG_GRID_LICENSE_KEY='${{ secrets.AG_GRID_LICENSE_KEY }}' .
+          docker build -t $REGISTRY/$REPOSITORY:$VERSION --build-arg AWS_ACCESS_KEY_ID=${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }} --build-arg NPM_TOKEN_READ=${{ secrets.NPM_TOKEN }} --build-arg JFROG_NPM_TOKEN_READ=${{ secrets.JFROG_NPM_TOKEN_READ }} --build-arg FONTAWESOME_TOKEN=${{ secrets.FONTAWESOME_TOKEN }} --build-arg BIT_AUTH_TOKEN=${{ secrets.BIT_AUTH_TOKEN }} --build-arg AZURE_TOKEN=${{ secrets.AZURE_TOKEN }} --build-arg AZURE_REFRESH_TOKEN='${{ secrets.AZURE_REFRESH_TOKEN }}' --build-arg VUE_APP_SMARTY_STREETS_KEY=${{ secrets.VUE_APP_SMARTY_STREETS_KEY }} --build-arg AG_GRID_LICENSE_KEY='${{ secrets.AG_GRID_LICENSE_KEY }}' .
           docker push $REGISTRY/$REPOSITORY:$VERSION
       - name: Archive npm failure logs
         uses: actions/upload-artifact@v2
