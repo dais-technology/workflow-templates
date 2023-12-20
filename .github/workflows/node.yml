@@ -86,12 +86,15 @@ jobs:
           git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
           repositoryName=$(node -pe "require('./package.json').name.replace('@dais/', '')")          
           gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
-          if [[ "$repositoryName" == "pl-claims-hub" ]]; then
+          if [[ "$repositoryName" == "pl-claims-hub" "$repositoryName" == "ioi-product-builder" || ]]; then
             npm install -g better-vsts-npm-auth
             better-vsts-npm-auth config set refresh_token ${{ secrets. AZURE_REFRESH_TOKEN }}
             better-vsts-npm-auth -config .npmrc
           fi
-          
+          if [[ "$repositoryName" == "ioi-product-builder" ]]; then
+            rm -rf package-lock.json
+            npm install 
+          fi          
           npm ci
           git commit -am"Build modified files" || echo 'No files changed'
           if [[ "${{ inputs.run_tests }}" ==  "true" ]]; then
