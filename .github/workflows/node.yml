@@ -93,6 +93,8 @@ jobs:
           fi
           echo "REPO IS: $repositoryName"
           if [[ "$repositoryName" == "ioi-product-builder" ]]; then
+            cat package-lock.json
+            cat .npmrc
             echo "Removing package-lock.json"
             rm -rf package-lock.json
             echo "Running NPM INSTALLLLLLLLLLLLLLL"
