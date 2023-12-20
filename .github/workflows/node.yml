@@ -97,7 +97,6 @@ jobs:
             #rm -rf package-lock.json
             #echo "Running NPM INSTALLLLLLLLLLLLLLL"
             #npm install
-            npm cache clean --force
             echo "None"
           fi          
           npm ci
