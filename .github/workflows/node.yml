@@ -94,9 +94,9 @@ jobs:
           echo "REPO IS: $repositoryName"
           if [[ "$repositoryName" == "ioi-product-builder" ]]; then
             #echo "Removing package-lock.json"
-            rm -rf package-lock.json
-            echo "Running NPM INSTALLLLLLLLLLLLLLL"
-            npm install
+            #rm -rf package-lock.json
+            #echo "Running NPM INSTALLLLLLLLLLLLLLL"
+            #npm install
             echo "None"
           fi          
           npm ci
