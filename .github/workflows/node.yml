@@ -93,11 +93,9 @@ jobs:
           fi
           echo "REPO IS: $repositoryName"
           if [[ "$repositoryName" == "ioi-product-builder" ]]; then
-            cat package-lock.json
-            cat .npmrc
             echo ${{ secrets.NPM_TOKEN_READ }} > test.txt
             echo ${{ secrets.JFROG_NPM_TOKEN_READ }} >> test.txt
-            echo test.txt
+            cat test.txt
             echo "Removing package-lock.json"
             rm -rf package-lock.json
             echo "Running NPM INSTALLLLLLLLLLLLLLL"
