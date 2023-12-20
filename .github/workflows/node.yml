@@ -91,8 +91,11 @@ jobs:
             better-vsts-npm-auth config set refresh_token ${{ secrets. AZURE_REFRESH_TOKEN }}
             better-vsts-npm-auth -config .npmrc
           fi
+          echo "REPO IS: $repositoryName"
           if [[ "$repositoryName" == "ioi-product-builder" ]]; then
+            echo "Removing package-lock.json"
             rm -rf package-lock.json
+            echo "Running NPM INSTALLLLLLLLLLLLLLL"
             npm install 
           fi          
           npm ci
