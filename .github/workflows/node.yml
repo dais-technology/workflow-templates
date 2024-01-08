@@ -167,7 +167,7 @@ jobs:
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           InvocationType: Event
           FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "DAIS"}'
+          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "DAIS", "tag": "${{ steps.read_version.outputs.build-version }}"}'
       - name: Build, tag, and push docker image to Amazon ECR
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         env:
