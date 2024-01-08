@@ -98,17 +98,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "template": "backend-python", "account": "DAIS"}'
-      - name: Create Application and Pipelines - JM
-        id: create-app-and-pipelines-jm
-        uses: gagoar/invoke-aws-lambda@master
-        with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-          InvocationType: Event
-          FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "template": "backend-python", "account": "JM"}'
+          Payload: '{"application": "${{ steps.push.outputs.projectName }}", "template": "backend-python", "account": "DAIS", "tag": "${{ steps.push.outputs.projectVersion }}"}'
       - name: Deploy To Dev
         id: deploy-to-dev
         uses: gagoar/invoke-aws-lambda@master
