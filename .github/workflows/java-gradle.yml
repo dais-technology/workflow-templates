@@ -156,7 +156,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
           REGION: ${{ secrets.ACTIONS_AWS_REGION }}
           FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backend-spring", "account": "DAIS"}'
+          Payload: '{"application": "${{ steps.read_project_name.outputs.rootProject-name }}", "template": "backend-spring", "account": "DAIS", "tag": "${{ steps.read_version.outputs.build-version }}"}'
       - name: Deploy To Dev
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: deploy-to-dev
