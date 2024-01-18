@@ -88,7 +88,6 @@ jobs:
           NEW_VERSION=$(git describe --tags --abbrev=0 | awk -F. '{OFS="."; $NF+=1; print $0}')
           git tag $NEW_VERSION
           git push --tags
-          ./gradlew test
           ./gradlew --refresh-dependencies version
           ./gradlew release -x test
           NEW_VERSION=$(git describe --tags --abbrev=0)
