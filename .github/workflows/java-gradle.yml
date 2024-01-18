@@ -101,6 +101,8 @@ jobs:
           ./gradlew release -x test
           NEW_VERSION=$(git describe --tags --abbrev=0 | awk -F. '{OFS="."; $NF+=1; print $0}')          
           echo "::set-output name=gitLog::$gitLog"
+          echo "::set-output name=currentVersion::$CURRENT_VERSION"
+          echo "::set-output name=newVersion::$NEW_VERSION"          
       - name: Retry Build with Gradle
         id: retry-build
         if: steps.build.outcome == 'failure'
