@@ -82,6 +82,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build with Gradle
         id: build
+        continue-on-error: true
         env:
           GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
         shell: bash
@@ -94,6 +95,27 @@ jobs:
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
           git fetch --tags
           git status --porcelain
+          ./gradlew test
+          ./gradlew --refresh-dependencies version
+          ./gradlew release -x test
+           echo "::set-output name=gitLog::$gitLog"
+      - name: Retry Build with Gradle
+        id: retry-build
+        if: steps.build.outcome == 'failure'
+        env:
+          GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
+        shell: bash
+        run: |
+          git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
+          git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
+          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
+          mkdir -p ~/.gradle/
+          echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
+          echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
+          git fetch --tags
+          git status --porcelain
+          NEW_VERSION=$(git describe --tags --abbrev=0 | awk -F. '{$NF+=1; OFS="."; print $0}')
+          git push --tags
           ./gradlew test
           ./gradlew --refresh-dependencies version
           ./gradlew release -x test
