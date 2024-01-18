@@ -143,7 +143,7 @@ jobs:
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: publish
         run: |
-          [[ $steps.build.outputs.currentVersion != steps.build.outputs.newVersion ]]; then
+          if [[ $steps.build.outputs.currentVersion != steps.build.outputs.newVersion ]]; then
             ./gradlew -x test artifactoryPublish pushDocker
           else
             echo "Nothing to do"
