@@ -164,12 +164,14 @@ jobs:
             echo "Nothing to do"
           fi
       - name: Read Version
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix      
         id: read_version
         uses: christian-draeger/read-properties@1.1.0
         with:
           path: "version.txt"
           properties: "build.version"
       - name: Read Project Name
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix      
         id: read_project_name
         uses: christian-draeger/read-properties@1.1.0
         with:
