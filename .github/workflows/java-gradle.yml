@@ -97,11 +97,14 @@ jobs:
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
           git fetch --tags
           git status --porcelain
-          CURRENT_VERSION=$(git describe --tags --abbrev=0)          
-          ./gradlew test
-          ./gradlew --refresh-dependencies version
-          ./gradlew release -x test
-          NEW_VERSION=$(git describe --tags --abbrev=0)          
+          CURRENT_VERSION=$(git describe --tags --abbrev=0)
+          NEW_VERSION=$CURRENT_VERSION
+          default_branch=$(git branch --show-current)
+          if [[ "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+            ./gradlew --refresh-dependencies version
+            ./gradlew release -x test
+            NEW_VERSION=$(git describe --tags --abbrev=0)     
+          fi
           echo "::set-output name=gitLog::$gitLog"
           echo "::set-output name=currentVersion::$CURRENT_VERSION"
           echo "::set-output name=newVersion::$NEW_VERSION"          
@@ -126,9 +129,12 @@ jobs:
           git push --tags
           git fetch --tags
           git status --porcelain          
-          ./gradlew test
-          ./gradlew --refresh-dependencies version
-          ./gradlew release -x test
+          default_branch=$(git branch --show-current)
+          if [[ "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+            ./gradlew --refresh-dependencies version
+            ./gradlew release -x test
+            NEW_VERSION=$(git describe --tags --abbrev=0)     
+          fi
           NEW_VERSION=$(git describe --tags --abbrev=0)
           echo "::set-output name=gitLog::$gitLog"
           echo "::set-output name=currentVersion::$CURRENT_VERSION"
