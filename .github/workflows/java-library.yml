@@ -44,7 +44,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
       - name: Build with Gradle
         id: build
-        continue-on-error: true        
         env:
           GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
         shell: bash
@@ -57,7 +56,6 @@ jobs:
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
           git fetch --tags
           git status --porcelain
-          CURRENT_VERSION=$(git describe --tags --abbrev=0)             
           #./gradlew test
           ./gradlew --refresh-dependencies version          
           if [[ "${{ inputs.hotfix }}" ==  "true" ]]; then
@@ -65,35 +63,7 @@ jobs:
           else
             ./gradlew release -x test
           fi
-          NEW_VERSION=$(git describe --tags --abbrev=0)          
           echo "::set-output name=gitLog::$gitLog"
-          echo "::set-output name=currentVersion::$CURRENT_VERSION"
-          echo "::set-output name=newVersion::$NEW_VERSION"
-      - name: Retry Build with Gradle
-        id: retry-build
-        if: steps.build.outcome == 'failure'
-        env:
-          GRADLE_PROPERTIES: ${{ secrets.GRADLE_PROPERTIES }}
-        shell: bash
-        run: |
-          git config user.name ${{ secrets.DAIS_MACHINE_GITHUB_USERNAME }}
-          git config user.email ${{ secrets.DAIS_MACHINE_GITHUB_EMAIL }}
-          gitLog=$(git log -1 --pretty=%B | sed s/\'/\"/ | sed s/\"/\'/ | sed s/'→'/'->'/)
-          mkdir -p ~/.gradle/
-          echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
-          echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
-          git fetch --tags
-          git status --porcelain
-          CURRENT_VERSION=$(git describe --tags --abbrev=0)
-          NEW_VERSION=$(git describe --tags --abbrev=0 | awk -F. '{OFS="."; $NF+=1; print $0}')
-          git tag $NEW_VERSION
-          git push --tags
-          ./gradlew --refresh-dependencies version
-          ./gradlew release -x test
-          NEW_VERSION=$(git describe --tags --abbrev=0)
-          echo "::set-output name=gitLog::$gitLog"
-          echo "::set-output name=currentVersion::$CURRENT_VERSION"
-          echo "::set-output name=newVersion::$NEW_VERSION"          
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v3
         if: always()
@@ -111,13 +81,9 @@ jobs:
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')      
         id: publish
         run: |
-          echo "Current version: ${{steps.build.outputs.currentVersion}}"
-          echo "New version: ${{steps.build.outputs.newVersion}}"
-          if [[ ${{steps.build.outputs.currentVersion}} != ${{steps.build.outputs.newVersion}} ]]; then
-            ./gradlew -x test artifactoryPublish pushDocker
-          else
-            echo "Nothing to do"
-          fi          
+          echo ${{ steps.read_version.outputs.build-version }}
+          echo ${{ steps.read_project_name.outputs.rootProject-name }}
+          ./gradlew -x test artifactoryPublish
       - name: Read Version
         id: read_version
         uses: christian-draeger/read-properties@1.1.0
