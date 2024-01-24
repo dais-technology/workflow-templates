@@ -161,7 +161,7 @@ jobs:
         run: |
           echo "Current version: ${{steps.build.outputs.currentVersion}}"
           echo "New version: ${{steps.build.outputs.newVersion}}"
-          if [[ ${{steps.build.outputs.currentVersion}} != ${{steps.build.outputs.newVersion}} ]]; then
+          if [[ ${{ steps.build.outcome == 'success' }} || ( ${{steps.build.outputs.currentVersion}} != ${{steps.build.outputs.newVersion}} ) ]]; then
             ./gradlew -x test artifactoryPublish pushDocker
           else
             echo "Nothing to do"
