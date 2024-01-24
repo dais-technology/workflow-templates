@@ -18,6 +18,8 @@ permissions:
   id-token: write
   contents: read
   checks: write
+concurrency:
+  group: ${{ github.action_repository || github.repository }}-${{ github.head_ref || github.ref_name }}      
 jobs:
   build:
     if: github.actor != 'dais-machine'
