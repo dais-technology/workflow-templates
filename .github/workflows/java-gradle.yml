@@ -103,6 +103,7 @@ jobs:
           if [[ ( ${{ github.event_name }} != "pull_request" ) && ( "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ) ]]; then
             ./gradlew --refresh-dependencies version
             ./gradlew release -x test
+            ./gradlew -x test artifactoryPublish pushDocker
             NEW_VERSION=$(git describe --tags --abbrev=0)     
           fi
           echo "::set-output name=gitLog::$gitLog"
@@ -136,6 +137,7 @@ jobs:
           if [[ ( ${{ github.event_name }} != 'pull_request' ) && ( "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ) ]]; then
             ./gradlew --refresh-dependencies version
             ./gradlew release -x test
+            ./gradlew -x test artifactoryPublish pushDocker
             NEW_VERSION=$(git describe --tags --abbrev=0)     
           fi
           NEW_VERSION=$(git describe --tags --abbrev=0)
@@ -155,17 +157,6 @@ jobs:
           name: test-results
           path: "build/test-results/test/TEST-*.xml"
           if-no-files-found: ignore
-      - name: Publish
-        if: ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix ) && github.event_name != 'pull_request'
-        id: publish
-        run: |
-          echo "Current version: ${{steps.build.outputs.currentVersion}}"
-          echo "New version: ${{steps.build.outputs.newVersion}}"
-          if [[ ( ${{ steps.build.outcome == 'success' }} || ${{ steps.retry-build.outcome == 'success' }} ) && ( ( ${{steps.build.outputs.currentVersion}} != ${{steps.build.outputs.newVersion}} ) || ( ${{steps.retry-build.outputs.currentVersion}} != ${{steps.retry-build.outputs.newVersion}} )) ]]; then
-            ./gradlew -x test artifactoryPublish pushDocker
-          else
-            echo "Nothing to do"
-          fi
       - name: Read Version
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix      
         id: read_version
