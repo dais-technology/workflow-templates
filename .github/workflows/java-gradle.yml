@@ -100,7 +100,7 @@ jobs:
           CURRENT_VERSION=$(git describe --tags --abbrev=0)
           NEW_VERSION=$CURRENT_VERSION
           default_branch=$(git branch --show-current)
-          if [[ "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+          if [[ ( ${{ github.event_name }} != 'pull_request' ) && ( "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ) ]]; then
             ./gradlew --refresh-dependencies version
             ./gradlew release -x test
             NEW_VERSION=$(git describe --tags --abbrev=0)     
@@ -133,7 +133,7 @@ jobs:
           git fetch --tags
           git status --porcelain          
           default_branch=$(git branch --show-current)
-          if [[ "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ]]; then
+          if [[ ( ${{ github.event_name }} != 'pull_request' ) && ( "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ) ]]; then
             ./gradlew --refresh-dependencies version
             ./gradlew release -x test
             NEW_VERSION=$(git describe --tags --abbrev=0)     
@@ -156,7 +156,7 @@ jobs:
           path: "build/test-results/test/TEST-*.xml"
           if-no-files-found: ignore
       - name: Publish
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
+        if: ((github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix ) && github.event_name != 'pull_request'
         id: publish
         run: |
           echo "Current version: ${{steps.build.outputs.currentVersion}}"
