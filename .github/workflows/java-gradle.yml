@@ -102,8 +102,7 @@ jobs:
           default_branch=$(git branch --show-current)
           if [[ ( ${{ github.event_name }} != "pull_request" ) && ( "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ) ]]; then
             ./gradlew --refresh-dependencies version
-            ./gradlew release -x test
-            ./gradlew -x test artifactoryPublish pushDocker
+            ./gradlew release -x test artifactoryPublish pushDocker
             NEW_VERSION=$(git describe --tags --abbrev=0)     
           fi
           echo "::set-output name=gitLog::$gitLog"
@@ -136,8 +135,7 @@ jobs:
           default_branch=$(git branch --show-current)
           if [[ ( ${{ github.event_name }} != 'pull_request' ) && ( "$default_branch" == "master" || "$default_branch" == "main" || "$default_branch" == "develop" || "${{ inputs.hotfix }}" ==  "true" ) ]]; then
             ./gradlew --refresh-dependencies version
-            ./gradlew release -x test
-            ./gradlew -x test artifactoryPublish pushDocker
+            ./gradlew release -x test artifactoryPublish pushDocker
             NEW_VERSION=$(git describe --tags --abbrev=0)     
           fi
           NEW_VERSION=$(git describe --tags --abbrev=0)
