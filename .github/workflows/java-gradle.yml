@@ -125,7 +125,7 @@ jobs:
           git status --porcelain
           CURRENT_VERSION=$(git describe --tags --abbrev=0)
           NEW_VERSION=$(git describe --tags --abbrev=0 | awk -F. '{OFS="."; $NF+=1; print $0}')
-          if [[ $CURRENT_VERSION == $NEW_VERSION]]; then
+          if [[ $CURRENT_VERSION == $NEW_VERSION ]]; then
             NEW_VERSION=$(echo $NEW_VERSION | awk -F. '{OFS="."; $NF+=1; print $0}')
           fi
           git tag $NEW_VERSION
