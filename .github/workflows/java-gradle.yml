@@ -95,6 +95,8 @@ jobs:
           mkdir -p ~/.gradle/
           echo "GRADLE_USER_HOME=${HOME}/.gradle" >> $GITHUB_ENV
           echo "${GRADLE_PROPERTIES}" > ~/.gradle/gradle.properties
+          echo "${GRADLE_PROPERTIES}"
+          cat ~/.gradle/gradle.properties
           git fetch --tags
           git status --porcelain
           CURRENT_VERSION=$(git describe --tags --abbrev=0)
