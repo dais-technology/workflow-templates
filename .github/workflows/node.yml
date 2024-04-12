@@ -148,17 +148,6 @@ jobs:
           AZURE_TOKEN: ${{ secrets.AZURE_TOKEN }}
           AZURE_AUTH_TOKEN: ${{ secrets.AZURE_AUTH_TOKEN }}
           AZURE_REFRESH_TOKEN: ${{ secrets. AZURE_REFRESH_TOKEN }}
-      - name: Create Application and Pipelines - JM
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
-        id: create-app-and-pipelines-jm
-        uses: gagoar/invoke-aws-lambda@master
-        with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_AWS_SECRET_ACCESS_KEY }}
-          REGION: ${{ secrets.ACTIONS_AWS_REGION }}
-          InvocationType: Event
-          FunctionName: spinnaker-pipelines-dev-deployer
-          Payload: '{"application": "${{ steps.npm-build.outputs.projectName }}", "template": "web-application", "account": "JM"}'
       - name: Create Application and Pipelines - DAIS
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') || inputs.hotfix
         id: create-app-and-pipelines-dais
